@@ -15,6 +15,9 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: "actions/checkout"
+        update-types: ["version-update:semver-major"]
     groups:
       github-actions-deps:
         patterns: ["*"]
