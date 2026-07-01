@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "description": "Repos promoted into the ranked value tier - discovered to hold concrete, build-out-worthy latent value.",
+  "ranked": [
+    {
+      "repo": "organvm/organon-noumenon--ontogenetic-morphe",
+      "promoted": "2026-07-01",
+      "source": "auto-discovery-2026-06-30",
+      "tier": "infrastructure",
+      "value": "Reusable symbolic provenance and process-routing kernel for AI-run organs: typed value lineage, recursive process loops, async bus routing, signal/echo semantics, lifecycle-managed subsystems, and monetization/identity/research workflow primitives.",
+      "first_task": "Ship a durable trace export contract: record bus events and SymbolicValue lineage to JSONL, expose it through an `autogenrec trace run ... --out ...` command, and test that the full-system demo emits ordered replayable events.",
+      "thesis": "DISCOVERY.md"
+    }
+  ]
+}
