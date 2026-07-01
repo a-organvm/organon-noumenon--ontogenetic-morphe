@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "description": "Repos promoted into the ranked value tier - discovered to hold concrete, build-out-worthy latent value.",
+  "ranked": [
+    {
+      "repo": "organvm/organon-noumenon--ontogenetic-morphe",
+      "promoted": "2026-07-01",
+      "source": "auto-discovery",
+      "tier": "infrastructure",
+      "value": "Reusable symbolic-process kernel for ORGANVM: typed symbolic values with provenance, recursive four-phase process loops, an async wildcard message bus, lifecycle orchestration, and concrete subsystems for identity, routing, value exchange, process monetization, archive, conflict, temporal, and academic flows.",
+      "first_task": "Harden the public SDK surface and smoke gate: fix README imports to the real modules, document the minimal supported imports, and add a CI smoke test that imports the package, starts the default orchestrator, and runs the value-exchange demo path.",
+      "thesis": "DISCOVERY.md"
+    }
+  ]
+}
