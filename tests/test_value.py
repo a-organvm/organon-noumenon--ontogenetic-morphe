@@ -4,13 +4,6 @@ from decimal import Decimal
 
 import pytest
 
-from autogenrec.subsystems.value.value_exchange_manager import (
-    Account,
-    CurrencyType,
-    TransactionStatus,
-    TransactionType,
-    ValueExchangeManager,
-)
 from autogenrec.subsystems.value.blockchain_simulator import (
     BlockchainSimulator,
     ConsensusConfig,
@@ -23,7 +16,11 @@ from autogenrec.subsystems.value.process_monetizer import (
     ProductType,
     RevenueModel,
 )
-
+from autogenrec.subsystems.value.value_exchange_manager import (
+    CurrencyType,
+    TransactionStatus,
+    ValueExchangeManager,
+)
 
 # ============================================================================
 # ValueExchangeManager Tests
@@ -83,7 +80,7 @@ class TestValueExchangeManager:
         assert result.target_balance == Decimal("150")
 
         updated = manager.get_account(account.id)
-        assert updated.balance == Decimal("150")
+        assert updated.balance == Decimal("150")  # type: ignore
 
     def test_withdraw(self, manager: ValueExchangeManager) -> None:
         """Test withdrawing value."""
@@ -109,7 +106,7 @@ class TestValueExchangeManager:
         result = manager.withdraw(account.id, Decimal("100"))
         assert result.success is False
         assert result.status == TransactionStatus.FAILED
-        assert "Insufficient balance" in result.error
+        assert "Insufficient balance" in result.error  # type: ignore
 
     def test_transfer(self, manager: ValueExchangeManager) -> None:
         """Test transferring value between accounts."""
@@ -186,7 +183,7 @@ class TestValueExchangeManager:
         )
 
         assert result.success is False
-        assert "No exchange rate" in result.error
+        assert "No exchange rate" in result.error  # type: ignore
 
     def test_reverse_transaction(self, manager: ValueExchangeManager) -> None:
         """Test reversing a transaction."""
@@ -213,8 +210,8 @@ class TestValueExchangeManager:
         # Check balances restored
         source_account = manager.get_account(source.id)
         target_account = manager.get_account(target.id)
-        assert source_account.balance == Decimal("100")
-        assert target_account.balance == Decimal("50")
+        assert source_account.balance == Decimal("100")  # type: ignore
+        assert target_account.balance == Decimal("50")  # type: ignore
 
     def test_get_accounts_by_owner(self, manager: ValueExchangeManager) -> None:
         """Test getting accounts by owner."""
@@ -314,7 +311,7 @@ class TestBlockchainSimulator:
         """Test mining with no pending transactions."""
         result = simulator.mine_block()
         assert result.success is False
-        assert "No pending transactions" in result.error
+        assert "No pending transactions" in result.error  # type: ignore
 
     def test_get_block(self, simulator: BlockchainSimulator) -> None:
         """Test getting a block."""
@@ -532,8 +529,8 @@ class TestProcessMonetizer:
 
         # Check process metrics updated
         updated = monetizer.get_process(process.id)
-        assert updated.usage_count == 1
-        assert updated.total_revenue == Decimal("50")
+        assert updated.usage_count == 1  # type: ignore
+        assert updated.total_revenue == Decimal("50")  # type: ignore
 
     def test_valuate_process(self, monetizer: ProcessMonetizer) -> None:
         """Test valuating a process."""
@@ -586,7 +583,7 @@ class TestProcessMonetizer:
             amount=Decimal("100"),
         )
 
-        processed = monetizer.process_payout(payout.id)
+        processed = monetizer.process_payout(payout.id)  # type: ignore
         assert processed is not None
         assert processed.status.name == "PROCESSED"
         assert processed.processed_at is not None
