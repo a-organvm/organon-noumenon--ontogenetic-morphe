@@ -4,15 +4,42 @@ These tests verify that subsystems can work together to accomplish
 complex workflows spanning multiple components.
 """
 
-from datetime import datetime, timedelta, UTC
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
-import pytest
-
-# Import all subsystems we'll test together
-from autogenrec.subsystems.value.value_exchange_manager import (
-    ValueExchangeManager,
-    CurrencyType,
+from autogenrec.subsystems.academic.academia_manager import (
+    AcademiaManager,
+    PublicationType,
+)
+from autogenrec.subsystems.core_processing.code_generator import (
+    CodeGenerator,
+    OutputLanguage,
+)
+from autogenrec.subsystems.identity.audience_classifier import (
+    AccessLevel,
+    AudienceClassifier,
+    RuleOperator,
+    SegmentType,
+)
+from autogenrec.subsystems.identity.mask_generator import (
+    MaskGenerator,
+    MaskType,
+)
+from autogenrec.subsystems.temporal.evolution_scheduler import EvolutionScheduler
+from autogenrec.subsystems.temporal.location_resolver import (
+    LocationResolver,
+    PlaceType,
+    ResolutionStatus,
+    SpatialRelation,
+)
+from autogenrec.subsystems.temporal.time_manager import CycleType, TimeManager
+from autogenrec.subsystems.transformation.consumption_manager import (
+    ConsumptionManager,
+    ResourceType,
+)
+from autogenrec.subsystems.transformation.process_converter import (
+    ConversionFormat,
+    ProcessConverter,
 )
 from autogenrec.subsystems.value.blockchain_simulator import BlockchainSimulator
 from autogenrec.subsystems.value.process_monetizer import (
@@ -20,42 +47,12 @@ from autogenrec.subsystems.value.process_monetizer import (
     ProductType,
     RevenueModel,
 )
-from autogenrec.subsystems.identity.mask_generator import (
-    MaskGenerator,
-    MaskType,
-)
-from autogenrec.subsystems.identity.audience_classifier import (
-    AudienceClassifier,
-    SegmentType,
-    AccessLevel,
-    RuleOperator,
-)
-from autogenrec.subsystems.transformation.process_converter import (
-    ProcessConverter,
-    ConversionFormat,
-)
-from autogenrec.subsystems.transformation.consumption_manager import (
-    ConsumptionManager,
-    ResourceType,
-    RiskLevel,
-)
-from autogenrec.subsystems.core_processing.code_generator import (
-    CodeGenerator,
-    OutputLanguage,
-)
-from autogenrec.subsystems.academic.academia_manager import (
-    AcademiaManager,
-    PublicationType,
-)
-from autogenrec.subsystems.temporal.time_manager import TimeManager, CycleType
-from autogenrec.subsystems.temporal.evolution_scheduler import EvolutionScheduler
-from autogenrec.subsystems.temporal.location_resolver import (
-    LocationResolver,
-    PlaceType,
-    SpatialRelation,
-    ResolutionStatus,
-)
 
+# Import all subsystems we'll test together
+from autogenrec.subsystems.value.value_exchange_manager import (
+    CurrencyType,
+    ValueExchangeManager,
+)
 
 # ============================================================================
 # Integration Test: Value Flow Pipeline
@@ -64,7 +61,7 @@ from autogenrec.subsystems.temporal.location_resolver import (
 class TestValueFlowIntegration:
     """Test value flow: Exchange -> Blockchain -> Monetization."""
 
-    def test_complete_value_transfer_flow(self):
+    def test_complete_value_transfer_flow(self) -> None:
         """Test a complete value transfer with blockchain recording."""
         # Setup subsystems
         exchange = ValueExchangeManager()
@@ -98,10 +95,10 @@ class TestValueFlowIntegration:
         # Verify final balances
         alice_final = exchange.get_account(alice.id)
         bob_final = exchange.get_account(bob.id)
-        assert alice_final.balance == Decimal("75")
-        assert bob_final.balance == Decimal("75")
+        assert alice_final.balance == Decimal("75")  # type: ignore
+        assert bob_final.balance == Decimal("75")  # type: ignore
 
-    def test_monetization_with_exchange(self):
+    def test_monetization_with_exchange(self) -> None:
         """Test process monetization generating exchange transactions."""
         # Setup subsystems
         exchange = ValueExchangeManager()
@@ -127,7 +124,8 @@ class TestValueFlowIntegration:
 
         # Get process to check revenue
         updated_process = monetizer.get_process(process.id)
-        assert updated_process.total_revenue == Decimal("80")  # (5+3) * 10
+        assert updated_process is not None
+        assert updated_process.total_revenue == Decimal("80")  # (5+3) * 10  # type: ignore  # type: ignore
 
         # Create payout
         payout = monetizer.create_payout(process.id)
@@ -138,7 +136,7 @@ class TestValueFlowIntegration:
         assert result.success is True
 
         creator_final = exchange.get_account(creator.id)
-        assert creator_final.balance == payout.net_amount
+        assert creator_final.balance == payout.net_amount  # type: ignore
 
 
 # ============================================================================
@@ -148,7 +146,7 @@ class TestValueFlowIntegration:
 class TestIdentityClassificationIntegration:
     """Test identity: Mask -> Classification -> Access."""
 
-    def test_masked_user_classification(self):
+    def test_masked_user_classification(self) -> None:
         """Test classifying users with masked identities."""
         # Setup subsystems
         masks = MaskGenerator()
@@ -217,7 +215,7 @@ class TestIdentityClassificationIntegration:
 class TestProcessTransformationIntegration:
     """Test process: Convert -> Generate Code -> Validate."""
 
-    def test_process_to_code_pipeline(self):
+    def test_process_to_code_pipeline(self) -> None:
         """Test converting a process definition to executable code."""
         # Setup subsystems
         converter = ProcessConverter()
@@ -247,7 +245,7 @@ class TestProcessTransformationIntegration:
         structure = generator.register_structure(
             name="data_pipeline",
             structure_type="workflow",
-            definition=json_result.output.content,
+            definition=json_result.output.content,  # type: ignore
             inputs=["input_file", "rules"],
             outputs=["output_file"],
         )
@@ -255,13 +253,13 @@ class TestProcessTransformationIntegration:
         # Generate Python code
         code_result = generator.generate(structure.id, OutputLanguage.PYTHON)
         assert code_result.success is True
-        assert "def data_pipeline" in code_result.code.code
+        assert "def data_pipeline" in code_result.code.code  # type: ignore
 
         # Validate the code
         validation = generator.validate(code_result.code_id)
         assert validation.valid is True
 
-    def test_code_generation_with_consumption_tracking(self):
+    def test_code_generation_with_consumption_tracking(self) -> None:
         """Test code generation with resource consumption tracking."""
         # Setup subsystems
         generator = CodeGenerator()
@@ -311,7 +309,7 @@ class TestProcessTransformationIntegration:
 class TestAcademicResearchIntegration:
     """Test academic: Research -> Publications -> Archives."""
 
-    def test_complete_research_lifecycle(self):
+    def test_complete_research_lifecycle(self) -> None:
         """Test a complete research project lifecycle."""
         # Setup subsystem
         academia = AcademiaManager()
@@ -348,12 +346,12 @@ class TestAcademicResearchIntegration:
         )
 
         # Add citations
-        citation1 = academia.add_citation(
+        academia.add_citation(
             title="Prior Work on Symbols",
             authors=["Smith, J.", "Doe, A."],
             year=2023,
         )
-        citation2 = academia.add_citation(
+        academia.add_citation(
             title="Data Processing Fundamentals",
             authors=["Johnson, B."],
             year=2022,
@@ -368,7 +366,7 @@ class TestAcademicResearchIntegration:
             venue="Journal of Symbolic Computing",
             doi="10.1234/jsc.2024.001",
         )
-        assert published.is_published is True
+        assert published.is_published is True  # type: ignore
 
         # Archive the publication
         archive = academia.archive_publication(pub.id)
@@ -393,7 +391,7 @@ class TestAcademicResearchIntegration:
 class TestTemporalSpatialIntegration:
     """Test temporal and spatial subsystems together."""
 
-    def test_scheduled_evolution_at_location(self):
+    def test_scheduled_evolution_at_location(self) -> None:
         """Test evolution scheduling with location context."""
         # Setup subsystems
         time_mgr = TimeManager()
@@ -448,7 +446,7 @@ class TestTemporalSpatialIntegration:
 class TestFullSystemIntegration:
     """Test a complex flow spanning many subsystems."""
 
-    def test_research_monetization_flow(self):
+    def test_research_monetization_flow(self) -> None:
         """Test research output being monetized and tracked."""
         # Setup subsystems
         academia = AcademiaManager()
@@ -484,7 +482,7 @@ class TestFullSystemIntegration:
         monetizer.activate_process(algorithm.id)
 
         # 4. Create masked identity for researcher
-        researcher_mask = masks.generate_mask(
+        masks.generate_mask(
             name="researcher_public_identity",
             mask_type=MaskType.PSEUDONYMOUS,
             entity_id="researcher_1",
@@ -519,18 +517,18 @@ class TestFullSystemIntegration:
         payment_result = exchange.transfer(
             platform.id,
             researcher.id,
-            payout.net_amount,
+            payout.net_amount,  # type: ignore
         )
         assert payment_result.success is True
 
         # Verify final state
         researcher_balance = exchange.get_account(researcher.id)
-        assert researcher_balance.balance > Decimal("0")
+        assert researcher_balance.balance > Decimal("0")  # type: ignore
 
         updated_algorithm = monetizer.get_process(algorithm.id)
-        assert updated_algorithm.total_revenue == Decimal("1000")
+        assert updated_algorithm.total_revenue == Decimal("1000")  # type: ignore
 
-    def test_audience_segmented_content_delivery(self):
+    def test_audience_segmented_content_delivery(self) -> None:
         """Test content delivery based on audience classification."""
         # Setup subsystems
         classifier = AudienceClassifier()
@@ -538,7 +536,7 @@ class TestFullSystemIntegration:
         consumption = ConsumptionManager()
 
         # 1. Create audience segments
-        free_tier = classifier.create_segment(
+        classifier.create_segment(
             name="free",
             access_level=AccessLevel.BASIC,
             is_default=True,
@@ -571,12 +569,12 @@ class TestFullSystemIntegration:
         classifier.classify_member(premium_user.id)
 
         # 4. Create masks based on access
-        free_mask = masks.generate_mask(
+        masks.generate_mask(
             name="free_access",
             mask_type=MaskType.ROLE,
             roles=["basic_viewer"],
         )
-        premium_mask = masks.generate_mask(
+        masks.generate_mask(
             name="premium_access",
             mask_type=MaskType.ROLE,
             roles=["full_access", "download"],
@@ -618,7 +616,7 @@ class TestFullSystemIntegration:
                 assert result.approved is False
 
         # Premium user has much higher quota
-        for i in range(100):
+        for i in range(100):  # noqa: B007
             event = consumption.create_event(
                 "user_premium",
                 ResourceType.API_CALL,
