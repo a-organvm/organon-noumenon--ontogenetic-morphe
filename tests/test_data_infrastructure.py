@@ -1,31 +1,19 @@
 """Tests for data infrastructure subsystems: ReferenceManager, ArchiveManager, EchoHandler."""
 
-import pytest
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 
+import pytest
+
+from autogenrec.core.signals import Signal
 from autogenrec.core.subsystem import SubsystemType
-from autogenrec.core.signals import Signal, SignalDomain
 from autogenrec.core.symbolic import (
     SymbolicInput,
     SymbolicValue,
     SymbolicValueType,
 )
-from autogenrec.subsystems.data.reference_manager import (
-    Reference,
-    ReferenceEdge,
-    ReferenceGraph,
-    ReferenceManager,
-    ReferenceQuery,
-    ReferenceStatus,
-    ReferenceType,
-    ReferenceValidator,
-    ValidationResult,
-)
 from autogenrec.subsystems.data.archive_manager import (
     ArchiveCategory,
     ArchiveManager,
-    ArchiveRecord,
-    ArchiveStatus,
     RetentionPolicy,
     SearchQuery,
 )
@@ -35,6 +23,16 @@ from autogenrec.subsystems.data.echo_handler import (
     EchoState,
     ReplayStrategy,
     SignalBuffer,
+)
+from autogenrec.subsystems.data.reference_manager import (
+    Reference,
+    ReferenceEdge,
+    ReferenceGraph,
+    ReferenceManager,
+    ReferenceQuery,
+    ReferenceType,
+    ReferenceValidator,
+    ValidationResult,
 )
 
 
@@ -223,7 +221,7 @@ class TestReferenceManager:
                 ),
             )
         )
-        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))
+        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))  # type: ignore
 
         filtered = await manager.intake(input_data, ctx)
         results = await manager.process(filtered, ctx)
@@ -326,7 +324,7 @@ class TestArchiveManager:
                 ),
             )
         )
-        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))
+        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))  # type: ignore
 
         filtered = await manager.intake(input_data, ctx)
         records = await manager.process(filtered, ctx)
@@ -378,7 +376,7 @@ class TestSignalBuffer:
 
         buffer.update_state(captured.id, EchoState.SCHEDULED)
         retrieved = buffer.get(captured.id)
-        assert retrieved.state == EchoState.SCHEDULED
+        assert retrieved.state == EchoState.SCHEDULED  # type: ignore
 
 
 class TestEchoHandler:
@@ -478,7 +476,7 @@ class TestEchoHandler:
                 ),
             )
         )
-        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))
+        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))  # type: ignore
 
         filtered = await handler.intake(input_data, ctx)
         captured = await handler.process(filtered, ctx)
