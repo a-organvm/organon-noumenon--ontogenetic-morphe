@@ -11,7 +11,8 @@ This shows the recursive-generative core:
 INTAKE -> PROCESS -> EVALUATE -> INTEGRATE -> (feedback) -> INTAKE...
 """
 
-import asyncio
+
+from decimal import Decimal
 
 from autogenrec.subsystems.temporal.evolution_scheduler import (
     EvolutionScheduler,
@@ -20,20 +21,18 @@ from autogenrec.subsystems.temporal.evolution_scheduler import (
 )
 from autogenrec.subsystems.temporal.time_manager import (
     TimeManager,
-    CycleType,
-)
-from autogenrec.subsystems.transformation.process_converter import (
-    ProcessConverter,
-    ConversionFormat,
 )
 from autogenrec.subsystems.transformation.consumption_manager import (
     ConsumptionManager,
     ResourceType,
 )
-from decimal import Decimal
+from autogenrec.subsystems.transformation.process_converter import (
+    ConversionFormat,
+    ProcessConverter,
+)
 
 
-def main():
+def main() -> None:
     print("=" * 60)
     print("Recursive Process Demo")
     print("=" * 60)
@@ -41,7 +40,7 @@ def main():
 
     # Initialize subsystems
     evolution = EvolutionScheduler()
-    time_mgr = TimeManager()
+    TimeManager()
     converter = ProcessConverter()
     consumption = ConsumptionManager()
 
@@ -107,28 +106,28 @@ def main():
             mutation_type=mutation_type,
         )
 
-        print(f"  [Process] Applied {mutation.mutation_type.name} mutation")
-        print(f"    Mutation ID: {mutation.id[:16]}...")
+        print(f"  [Process] Applied {mutation.mutation_type.name} mutation")  # type: ignore
+        print(f"    Mutation ID: {mutation.id[:16]}...")  # type: ignore
 
         # EVALUATE PHASE: Assess fitness
-        fitness_delta = mutated.fitness - current_pattern.fitness
-        should_continue = mutated.generation < 5
+        fitness_delta = mutated.fitness - current_pattern.fitness  # type: ignore
+        should_continue = mutated.generation < 5  # type: ignore
 
-        print(f"  [Evaluate] Fitness: {mutated.fitness:.3f} (delta: {fitness_delta:+.3f})")
+        print(f"  [Evaluate] Fitness: {mutated.fitness:.3f} (delta: {fitness_delta:+.3f})")  # type: ignore
         print(f"    Continue evolution: {should_continue}")
 
         # INTEGRATE PHASE: Update state and feedback
-        print(f"  [Integrate] Pattern evolved to generation {mutated.generation}")
+        print(f"  [Integrate] Pattern evolved to generation {mutated.generation}")  # type: ignore
 
         # Advance phase if conditions met
-        if mutated.generation >= 2 and mutated.phase == GrowthPhase.DORMANT:
-            advanced = evolution.advance_phase(mutated.id)
+        if mutated.generation >= 2 and mutated.phase == GrowthPhase.DORMANT:  # type: ignore
+            advanced = evolution.advance_phase(mutated.id)  # type: ignore
             if advanced:
                 mutated = advanced
                 print(f"    Phase advanced to: {mutated.phase.name}")
 
         # Feedback: The output becomes the next input
-        current_pattern = mutated
+        current_pattern = mutated  # type: ignore
 
     print()
 
@@ -160,19 +159,19 @@ def main():
 
     # Convert to different formats
     json_result = converter.convert(process.id, ConversionFormat.JSON)
-    print(f"\n  JSON Format:")
+    print("\n  JSON Format:")
     print(f"    Success: {json_result.success}")
     if json_result.success:
-        content = json_result.output.content
+        content = json_result.output.content  # type: ignore
         if isinstance(content, dict):
             print(f"    Keys: {list(content.keys())}")
 
     yaml_result = converter.convert(process.id, ConversionFormat.YAML)
-    print(f"\n  YAML Format:")
+    print("\n  YAML Format:")
     print(f"    Success: {yaml_result.success}")
 
     schema_result = converter.convert(process.id, ConversionFormat.SCHEMA)
-    print(f"\n  Schema Format:")
+    print("\n  Schema Format:")
     print(f"    Success: {schema_result.success}")
     print()
 
@@ -188,14 +187,14 @@ def main():
         Decimal("1"),
     )
 
-    print(f"  Compute Resources:")
-    print(f"    Total Allocated: 1000 units")
+    print("  Compute Resources:")
+    print("    Total Allocated: 1000 units")
     print(f"    Remaining: {remaining} units")
-    print(f"    Used: {1000 - int(remaining)} units")
-    print(f"    Per Cycle: ~50 units")
+    print(f"    Used: {1000 - int(remaining)} units")  # type: ignore
+    print("    Per Cycle: ~50 units")
 
     consumption_stats = consumption.get_stats()
-    print(f"\n  Consumption Stats:")
+    print("\n  Consumption Stats:")
     print(f"    Total Events: {consumption_stats.total_events}")
     print(f"    Approved: {consumption_stats.consumed_count}")
     print(f"    Denied: {consumption_stats.rejected_count}")
@@ -209,12 +208,12 @@ def main():
     print("-" * 40)
 
     final = evolution.get_pattern(current_pattern.id)
-    print(f"  Name: {final.name}")
-    print(f"  Generation: {final.generation}")
-    print(f"  Phase: {final.phase.name}")
-    print(f"  Fitness: {final.fitness:.3f}")
-    print(f"  Stability: {final.stability.name}")
-    print(f"  Content: {final.content}")
+    print(f"  Name: {final.name}")  # type: ignore
+    print(f"  Generation: {final.generation}")  # type: ignore
+    print(f"  Phase: {final.phase.name}")  # type: ignore
+    print(f"  Fitness: {final.fitness:.3f}")  # type: ignore
+    print(f"  Stability: {final.stability.name}")  # type: ignore
+    print(f"  Content: {final.content}")  # type: ignore
 
     print()
     print("=" * 60)
