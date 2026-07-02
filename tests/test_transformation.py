@@ -3,27 +3,21 @@
 from datetime import timedelta
 from decimal import Decimal
 
-import pytest
-
-from autogenrec.subsystems.transformation.process_converter import (
-    ProcessConverter,
-    ConversionFormat,
-    ConversionStrategy,
-    ConversionStatus,
+from autogenrec.subsystems.core_processing.code_generator import (
+    CodeGenerator,
+    GenerationStrategy,
+    OutputLanguage,
 )
 from autogenrec.subsystems.transformation.consumption_manager import (
     ConsumptionManager,
     ResourceType,
     RiskLevel,
-    ConsumptionStatus,
 )
-from autogenrec.subsystems.core_processing.code_generator import (
-    CodeGenerator,
-    OutputLanguage,
-    GenerationStrategy,
-    ValidationStatus,
+from autogenrec.subsystems.transformation.process_converter import (
+    ConversionFormat,
+    ConversionStrategy,
+    ProcessConverter,
 )
-
 
 # ============================================================================
 # ProcessConverter Tests
@@ -32,7 +26,7 @@ from autogenrec.subsystems.core_processing.code_generator import (
 class TestProcessConverterBasics:
     """Basic ProcessConverter tests."""
 
-    def test_initialization(self):
+    def test_initialization(self) -> None:
         """Test ProcessConverter initializes correctly."""
         pc = ProcessConverter()
         assert pc.name == "process_converter"
@@ -40,7 +34,7 @@ class TestProcessConverterBasics:
         assert pc.rule_count == 0
         assert pc.conversion_count == 0
 
-    def test_register_process(self):
+    def test_register_process(self) -> None:
         """Test registering a process."""
         pc = ProcessConverter()
         process = pc.register_process(
@@ -56,7 +50,7 @@ class TestProcessConverterBasics:
         assert len(process.inputs) == 2
         assert pc.process_count == 1
 
-    def test_get_process(self):
+    def test_get_process(self) -> None:
         """Test retrieving a process by ID."""
         pc = ProcessConverter()
         process = pc.register_process(name="test")
@@ -68,7 +62,7 @@ class TestProcessConverterBasics:
 class TestConversionFormats:
     """Test different conversion formats."""
 
-    def test_convert_to_json(self):
+    def test_convert_to_json(self) -> None:
         """Test converting to JSON format."""
         pc = ProcessConverter()
         process = pc.register_process(
@@ -83,15 +77,15 @@ class TestConversionFormats:
         assert isinstance(result.output.content, dict)
         assert result.output.content["name"] == "json_test"
 
-    def test_convert_to_yaml(self):
+    def test_convert_to_yaml(self) -> None:
         """Test converting to YAML format."""
         pc = ProcessConverter()
         process = pc.register_process(name="yaml_test")
         result = pc.convert(process.id, ConversionFormat.YAML)
         assert result.success is True
-        assert result.output.format == ConversionFormat.YAML
+        assert result.output.format == ConversionFormat.YAML  # type: ignore
 
-    def test_convert_to_schema(self):
+    def test_convert_to_schema(self) -> None:
         """Test converting to schema format."""
         pc = ProcessConverter()
         process = pc.register_process(
@@ -101,10 +95,10 @@ class TestConversionFormats:
         )
         result = pc.convert(process.id, ConversionFormat.SCHEMA)
         assert result.success is True
-        assert result.output.format == ConversionFormat.SCHEMA
-        assert "$schema" in result.output.content
+        assert result.output.format == ConversionFormat.SCHEMA  # type: ignore
+        assert "$schema" in result.output.content  # type: ignore
 
-    def test_convert_to_graph(self):
+    def test_convert_to_graph(self) -> None:
         """Test converting to graph format."""
         pc = ProcessConverter()
         process = pc.register_process(
@@ -115,10 +109,10 @@ class TestConversionFormats:
         )
         result = pc.convert(process.id, ConversionFormat.GRAPH)
         assert result.success is True
-        assert "nodes" in result.output.content
-        assert "edges" in result.output.content
+        assert "nodes" in result.output.content  # type: ignore
+        assert "edges" in result.output.content  # type: ignore
 
-    def test_convert_to_summary(self):
+    def test_convert_to_summary(self) -> None:
         """Test converting to summary format."""
         pc = ProcessConverter()
         process = pc.register_process(
@@ -127,18 +121,19 @@ class TestConversionFormats:
         )
         result = pc.convert(process.id, ConversionFormat.SUMMARY)
         assert result.success is True
+        assert result.output is not None
         assert result.output.content["step_count"] == 1
         assert len(result.output.warnings) > 0  # Summary is lossy
 
-    def test_convert_to_compressed(self):
+    def test_convert_to_compressed(self) -> None:
         """Test converting to compressed format."""
         pc = ProcessConverter()
         process = pc.register_process(name="compress_test")
         result = pc.convert(process.id, ConversionFormat.COMPRESSED)
         assert result.success is True
-        assert "checksum" in result.output.content
+        assert "checksum" in result.output.content  # type: ignore
 
-    def test_convert_to_template(self):
+    def test_convert_to_template(self) -> None:
         """Test converting to template format."""
         pc = ProcessConverter()
         process = pc.register_process(
@@ -148,13 +143,13 @@ class TestConversionFormats:
         )
         result = pc.convert(process.id, ConversionFormat.TEMPLATE)
         assert result.success is True
-        assert "placeholders" in result.output.content
+        assert "placeholders" in result.output.content  # type: ignore
 
 
 class TestConversionStrategies:
     """Test different conversion strategies."""
 
-    def test_direct_strategy(self):
+    def test_direct_strategy(self) -> None:
         """Test direct conversion strategy."""
         pc = ProcessConverter()
         process = pc.register_process(name="direct_test")
@@ -162,15 +157,15 @@ class TestConversionStrategies:
         assert result.success is True
         assert result.fidelity == 1.0
 
-    def test_transform_strategy(self):
+    def test_transform_strategy(self) -> None:
         """Test transform conversion strategy."""
         pc = ProcessConverter()
         process = pc.register_process(name="transform_test")
         result = pc.convert(process.id, ConversionFormat.JSON, ConversionStrategy.TRANSFORM)
         assert result.success is True
-        assert result.output.strategy == ConversionStrategy.TRANSFORM
+        assert result.output.strategy == ConversionStrategy.TRANSFORM  # type: ignore
 
-    def test_compress_strategy(self):
+    def test_compress_strategy(self) -> None:
         """Test compress conversion strategy."""
         pc = ProcessConverter()
         process = pc.register_process(name="compress_test")
@@ -182,7 +177,7 @@ class TestConversionStrategies:
 class TestConversionRules:
     """Test conversion rules."""
 
-    def test_add_rule(self):
+    def test_add_rule(self) -> None:
         """Test adding a conversion rule."""
         pc = ProcessConverter()
         rule = pc.add_rule(
@@ -194,43 +189,43 @@ class TestConversionRules:
         assert rule is not None
         assert pc.rule_count == 1
 
-    def test_convert_by_name(self):
+    def test_convert_by_name(self) -> None:
         """Test converting by process name."""
         pc = ProcessConverter()
         pc.register_process(name="named_process")
         result = pc.convert_by_name("named_process", ConversionFormat.JSON)
         assert result.success is True
 
-    def test_convert_by_name_not_found(self):
+    def test_convert_by_name_not_found(self) -> None:
         """Test converting with nonexistent name."""
         pc = ProcessConverter()
         result = pc.convert_by_name("nonexistent", ConversionFormat.JSON)
         assert result.success is False
-        assert "not found" in result.error
+        assert "not found" in result.error  # type: ignore
 
 
 class TestConverterStats:
     """Test converter statistics."""
 
-    def test_get_stats(self):
+    def test_get_stats(self) -> None:
         """Test getting conversion statistics."""
         pc = ProcessConverter()
         p1 = pc.register_process(name="p1")
         p2 = pc.register_process(name="p2")
         pc.convert(p1.id, ConversionFormat.JSON)
         pc.convert(p2.id, ConversionFormat.YAML)
-        
+
         stats = pc.get_stats()
         assert stats.total_processes == 2
         assert stats.successful_conversions == 2
         assert stats.average_fidelity > 0
 
-    def test_clear(self):
+    def test_clear(self) -> None:
         """Test clearing all data."""
         pc = ProcessConverter()
         pc.register_process(name="p1")
         pc.add_rule("r1", "*", "{{ name }}")
-        
+
         processes, rules, outputs = pc.clear()
         assert processes == 1
         assert rules == 1
@@ -244,7 +239,7 @@ class TestConverterStats:
 class TestConsumptionManagerBasics:
     """Basic ConsumptionManager tests."""
 
-    def test_initialization(self):
+    def test_initialization(self) -> None:
         """Test ConsumptionManager initializes correctly."""
         cm = ConsumptionManager()
         assert cm.name == "consumption_manager"
@@ -252,7 +247,7 @@ class TestConsumptionManagerBasics:
         assert cm.quota_count == 0
         assert cm.rule_count == 0
 
-    def test_create_and_consume(self):
+    def test_create_and_consume(self) -> None:
         """Test creating and consuming an event."""
         cm = ConsumptionManager()
         event = cm.create_event(
@@ -264,7 +259,7 @@ class TestConsumptionManagerBasics:
         assert result.approved is True
         assert cm.event_count == 1
 
-    def test_get_event(self):
+    def test_get_event(self) -> None:
         """Test getting an event by ID."""
         cm = ConsumptionManager()
         event = cm.create_event("user_123", ResourceType.TOKEN)
@@ -277,21 +272,21 @@ class TestConsumptionManagerBasics:
 class TestResourceTypes:
     """Test different resource types."""
 
-    def test_compute_resource(self):
+    def test_compute_resource(self) -> None:
         """Test compute resource consumption."""
         cm = ConsumptionManager()
         event = cm.create_event("user", ResourceType.COMPUTE, Decimal("100"))
         result = cm.consume(event)
         assert result.approved is True
 
-    def test_storage_resource(self):
+    def test_storage_resource(self) -> None:
         """Test storage resource consumption."""
         cm = ConsumptionManager()
         event = cm.create_event("user", ResourceType.STORAGE, Decimal("1024"))
         result = cm.consume(event)
         assert result.approved is True
 
-    def test_api_call_resource(self):
+    def test_api_call_resource(self) -> None:
         """Test API call resource consumption."""
         cm = ConsumptionManager()
         event = cm.create_event("user", ResourceType.API_CALL, Decimal("1"))
@@ -302,7 +297,7 @@ class TestResourceTypes:
 class TestConsumptionQuotas:
     """Test consumption quotas."""
 
-    def test_add_quota(self):
+    def test_add_quota(self) -> None:
         """Test adding a quota."""
         cm = ConsumptionManager()
         quota = cm.add_quota(
@@ -314,7 +309,7 @@ class TestConsumptionQuotas:
         assert quota is not None
         assert cm.quota_count == 1
 
-    def test_quota_enforcement(self):
+    def test_quota_enforcement(self) -> None:
         """Test quota is enforced."""
         cm = ConsumptionManager()
         cm.add_quota(
@@ -323,19 +318,19 @@ class TestConsumptionQuotas:
             max_amount=Decimal("10"),
             consumer_id="user_123",
         )
-        
+
         # First consumption should succeed
         event1 = cm.create_event("user_123", ResourceType.TOKEN, Decimal("8"))
         result1 = cm.consume(event1)
         assert result1.approved is True
-        
+
         # Second consumption should fail (quota exceeded)
         event2 = cm.create_event("user_123", ResourceType.TOKEN, Decimal("5"))
         result2 = cm.consume(event2)
         assert result2.approved is False
-        assert "exceeded" in result2.rejection_reason.lower()
+        assert "exceeded" in result2.rejection_reason.lower()  # type: ignore
 
-    def test_global_quota(self):
+    def test_global_quota(self) -> None:
         """Test global quota (no consumer_id)."""
         cm = ConsumptionManager()
         cm.add_quota(
@@ -343,12 +338,12 @@ class TestConsumptionQuotas:
             resource_type=ResourceType.TOKEN,
             max_amount=Decimal("100"),
         )
-        
+
         event = cm.create_event("any_user", ResourceType.TOKEN, Decimal("50"))
         result = cm.consume(event)
         assert result.approved is True
 
-    def test_check_quota(self):
+    def test_check_quota(self) -> None:
         """Test checking quota without consuming."""
         cm = ConsumptionManager()
         cm.add_quota(
@@ -357,7 +352,7 @@ class TestConsumptionQuotas:
             max_amount=Decimal("100"),
             consumer_id="user_123",
         )
-        
+
         allowed, remaining = cm.check_quota("user_123", ResourceType.TOKEN, Decimal("30"))
         assert allowed is True
         assert remaining == Decimal("100")
@@ -366,7 +361,7 @@ class TestConsumptionQuotas:
 class TestRiskRules:
     """Test risk evaluation rules."""
 
-    def test_add_risk_rule(self):
+    def test_add_risk_rule(self) -> None:
         """Test adding a risk rule."""
         cm = ConsumptionManager()
         rule = cm.add_risk_rule(
@@ -378,7 +373,7 @@ class TestRiskRules:
         assert rule is not None
         assert cm.rule_count == 1
 
-    def test_risk_evaluation(self):
+    def test_risk_evaluation(self) -> None:
         """Test risk evaluation rejects high risk."""
         cm = ConsumptionManager()
         cm.add_risk_rule(
@@ -386,13 +381,13 @@ class TestRiskRules:
             condition="amount>1000",
             risk_level=RiskLevel.CRITICAL,
         )
-        
+
         event = cm.create_event("user", ResourceType.TOKEN, Decimal("2000"))
         result = cm.consume(event)
         assert result.approved is False
         assert result.risk_level == RiskLevel.CRITICAL
 
-    def test_risk_with_tags(self):
+    def test_risk_with_tags(self) -> None:
         """Test risk rule with tag condition."""
         cm = ConsumptionManager()
         cm.add_risk_rule(
@@ -400,7 +395,7 @@ class TestRiskRules:
             condition="tag:dangerous",
             risk_level=RiskLevel.HIGH,
         )
-        
+
         event = cm.create_event(
             "user",
             ResourceType.TOKEN,
@@ -413,14 +408,14 @@ class TestRiskRules:
 class TestConsumptionMetrics:
     """Test consumption metrics."""
 
-    def test_get_metrics(self):
+    def test_get_metrics(self) -> None:
         """Test getting usage metrics."""
         cm = ConsumptionManager()
-        
-        for i in range(5):
+
+        for _i in range(5):
             event = cm.create_event("user_123", ResourceType.TOKEN, Decimal("10"))
             cm.consume(event)
-        
+
         metrics = cm.get_metrics(
             "user_123",
             ResourceType.TOKEN,
@@ -429,14 +424,14 @@ class TestConsumptionMetrics:
         assert metrics.total_events == 5
         assert metrics.total_consumed == Decimal("50")
 
-    def test_get_consumer_events(self):
+    def test_get_consumer_events(self) -> None:
         """Test getting events for a consumer."""
         cm = ConsumptionManager()
-        
-        for i in range(3):
+
+        for _i in range(3):
             event = cm.create_event("user_123", ResourceType.TOKEN)
             cm.consume(event)
-        
+
         events = cm.get_consumer_events("user_123")
         assert len(events) == 3
 
@@ -444,28 +439,28 @@ class TestConsumptionMetrics:
 class TestConsumptionStats:
     """Test consumption statistics."""
 
-    def test_get_stats(self):
+    def test_get_stats(self) -> None:
         """Test getting consumption statistics."""
         cm = ConsumptionManager()
         cm.add_quota("q1", ResourceType.TOKEN, Decimal("100"))
         cm.add_risk_rule("r1", "always", RiskLevel.LOW)
-        
+
         event = cm.create_event("user", ResourceType.TOKEN, Decimal("10"))
         cm.consume(event)
-        
+
         stats = cm.get_stats()
         assert stats.total_events == 1
         assert stats.total_quotas == 1
         assert stats.total_rules == 1
 
-    def test_clear(self):
+    def test_clear(self) -> None:
         """Test clearing all data."""
         cm = ConsumptionManager()
         cm.add_quota("q1", ResourceType.TOKEN, Decimal("100"))
         cm.add_risk_rule("r1", "always", RiskLevel.LOW)
         event = cm.create_event("user", ResourceType.TOKEN)
         cm.consume(event)
-        
+
         events, quotas, rules = cm.clear()
         assert events == 1
         assert quotas == 1
@@ -480,7 +475,7 @@ class TestConsumptionStats:
 class TestCodeGeneratorBasics:
     """Basic CodeGenerator tests."""
 
-    def test_initialization(self):
+    def test_initialization(self) -> None:
         """Test CodeGenerator initializes correctly."""
         cg = CodeGenerator()
         assert cg.name == "code_generator"
@@ -488,7 +483,7 @@ class TestCodeGeneratorBasics:
         assert cg.template_count == 0
         assert cg.generated_count == 0
 
-    def test_register_structure(self):
+    def test_register_structure(self) -> None:
         """Test registering a structure."""
         cg = CodeGenerator()
         structure = cg.register_structure(
@@ -502,7 +497,7 @@ class TestCodeGeneratorBasics:
         assert structure.name == "test_function"
         assert cg.structure_count == 1
 
-    def test_get_structure(self):
+    def test_get_structure(self) -> None:
         """Test getting a structure by ID."""
         cg = CodeGenerator()
         structure = cg.register_structure(name="test")
@@ -514,7 +509,7 @@ class TestCodeGeneratorBasics:
 class TestOutputLanguages:
     """Test different output languages."""
 
-    def test_generate_python(self):
+    def test_generate_python(self) -> None:
         """Test generating Python code."""
         cg = CodeGenerator()
         structure = cg.register_structure(
@@ -524,10 +519,10 @@ class TestOutputLanguages:
         )
         result = cg.generate(structure.id, OutputLanguage.PYTHON)
         assert result.success is True
-        assert "def add_numbers" in result.code.code
-        assert result.code.language == OutputLanguage.PYTHON
+        assert "def add_numbers" in result.code.code  # type: ignore
+        assert result.code.language == OutputLanguage.PYTHON  # type: ignore
 
-    def test_generate_javascript(self):
+    def test_generate_javascript(self) -> None:
         """Test generating JavaScript code."""
         cg = CodeGenerator()
         structure = cg.register_structure(
@@ -537,10 +532,10 @@ class TestOutputLanguages:
         )
         result = cg.generate(structure.id, OutputLanguage.JAVASCRIPT)
         assert result.success is True
-        assert "function multiply" in result.code.code
-        assert result.code.language == OutputLanguage.JAVASCRIPT
+        assert "function multiply" in result.code.code  # type: ignore
+        assert result.code.language == OutputLanguage.JAVASCRIPT  # type: ignore
 
-    def test_generate_json(self):
+    def test_generate_json(self) -> None:
         """Test generating JSON code."""
         cg = CodeGenerator()
         structure = cg.register_structure(name="json_test")
@@ -548,18 +543,18 @@ class TestOutputLanguages:
         assert result.success is True
         # Should be valid JSON
         import json
-        parsed = json.loads(result.code.code)
+        parsed = json.loads(result.code.code)  # type: ignore
         assert parsed["name"] == "json_test"
 
-    def test_generate_yaml(self):
+    def test_generate_yaml(self) -> None:
         """Test generating YAML code."""
         cg = CodeGenerator()
         structure = cg.register_structure(name="yaml_test")
         result = cg.generate(structure.id, OutputLanguage.YAML)
         assert result.success is True
-        assert "name: yaml_test" in result.code.code
+        assert "name: yaml_test" in result.code.code  # type: ignore
 
-    def test_generate_sql(self):
+    def test_generate_sql(self) -> None:
         """Test generating SQL code."""
         cg = CodeGenerator()
         structure = cg.register_structure(
@@ -569,9 +564,9 @@ class TestOutputLanguages:
         )
         result = cg.generate(structure.id, OutputLanguage.SQL)
         assert result.success is True
-        assert "CREATE OR REPLACE FUNCTION" in result.code.code
+        assert "CREATE OR REPLACE FUNCTION" in result.code.code  # type: ignore
 
-    def test_generate_bash(self):
+    def test_generate_bash(self) -> None:
         """Test generating Bash code."""
         cg = CodeGenerator()
         structure = cg.register_structure(
@@ -580,49 +575,49 @@ class TestOutputLanguages:
         )
         result = cg.generate(structure.id, OutputLanguage.BASH)
         assert result.success is True
-        assert "#!/bin/bash" in result.code.code
+        assert "#!/bin/bash" in result.code.code  # type: ignore
 
-    def test_generate_pseudocode(self):
+    def test_generate_pseudocode(self) -> None:
         """Test generating pseudocode."""
         cg = CodeGenerator()
         structure = cg.register_structure(name="algorithm")
         result = cg.generate(structure.id, OutputLanguage.PSEUDOCODE)
         assert result.success is True
-        assert "PROCEDURE algorithm" in result.code.code
+        assert "PROCEDURE algorithm" in result.code.code  # type: ignore
 
 
 class TestGenerationStrategies:
     """Test different generation strategies."""
 
-    def test_template_strategy(self):
+    def test_template_strategy(self) -> None:
         """Test template-based generation."""
         cg = CodeGenerator()
         structure = cg.register_structure(name="template_test")
         result = cg.generate(structure.id, OutputLanguage.PYTHON, GenerationStrategy.TEMPLATE)
         assert result.success is True
-        assert result.code.strategy == GenerationStrategy.TEMPLATE
+        assert result.code.strategy == GenerationStrategy.TEMPLATE  # type: ignore
 
-    def test_transform_strategy(self):
+    def test_transform_strategy(self) -> None:
         """Test transform-based generation."""
         cg = CodeGenerator()
         structure = cg.register_structure(name="transform_test")
         result = cg.generate(structure.id, OutputLanguage.PYTHON, GenerationStrategy.TRANSFORM)
         assert result.success is True
-        assert result.code.strategy == GenerationStrategy.TRANSFORM
+        assert result.code.strategy == GenerationStrategy.TRANSFORM  # type: ignore
 
-    def test_compose_strategy(self):
+    def test_compose_strategy(self) -> None:
         """Test compose-based generation."""
         cg = CodeGenerator()
         structure = cg.register_structure(name="compose_test")
         result = cg.generate(structure.id, OutputLanguage.PYTHON, GenerationStrategy.COMPOSE)
         assert result.success is True
-        assert result.code.strategy == GenerationStrategy.COMPOSE
+        assert result.code.strategy == GenerationStrategy.COMPOSE  # type: ignore
 
 
 class TestCodeTemplates:
     """Test code templates."""
 
-    def test_add_template(self):
+    def test_add_template(self) -> None:
         """Test adding a code template."""
         cg = CodeGenerator()
         template = cg.add_template(
@@ -635,7 +630,7 @@ class TestCodeTemplates:
         assert template is not None
         assert cg.template_count == 1
 
-    def test_template_application(self):
+    def test_template_application(self) -> None:
         """Test template is applied."""
         cg = CodeGenerator()
         cg.add_template(
@@ -645,35 +640,35 @@ class TestCodeTemplates:
             applies_to=["function"],
             priority=100,  # High priority
         )
-        
+
         structure = cg.register_structure(
             name="my_func",
             structure_type="function",
         )
         result = cg.generate(structure.id, OutputLanguage.PYTHON)
         assert result.success is True
-        assert "# Custom: my_func" in result.code.code
+        assert "# Custom: my_func" in result.code.code  # type: ignore
 
 
 class TestCodeValidation:
     """Test code validation."""
 
-    def test_validate_python(self):
+    def test_validate_python(self) -> None:
         """Test validating Python code."""
         cg = CodeGenerator()
         structure = cg.register_structure(name="valid_python")
         result = cg.generate(structure.id, OutputLanguage.PYTHON)
-        
+
         validation = cg.validate(result.code_id)
         assert validation.valid is True
         assert len(validation.errors) == 0
 
-    def test_validate_json(self):
+    def test_validate_json(self) -> None:
         """Test validating JSON code."""
         cg = CodeGenerator()
         structure = cg.register_structure(name="valid_json")
         result = cg.generate(structure.id, OutputLanguage.JSON)
-        
+
         validation = cg.validate(result.code_id)
         assert validation.valid is True
 
@@ -681,7 +676,7 @@ class TestCodeValidation:
 class TestExecutionPlans:
     """Test execution plan generation."""
 
-    def test_create_execution_plan(self):
+    def test_create_execution_plan(self) -> None:
         """Test creating an execution plan."""
         cg = CodeGenerator()
         structure = cg.register_structure(
@@ -690,7 +685,7 @@ class TestExecutionPlans:
             outputs=["y"],
         )
         gen_result = cg.generate(structure.id, OutputLanguage.PYTHON)
-        
+
         plan = cg.create_execution_plan(gen_result.code_id)
         assert plan is not None
         assert len(plan.steps) == 4
@@ -701,7 +696,7 @@ class TestExecutionPlans:
 class TestGeneratorConvenience:
     """Test convenience methods."""
 
-    def test_generate_from_definition(self):
+    def test_generate_from_definition(self) -> None:
         """Test generating from definition in one step."""
         cg = CodeGenerator()
         result = cg.generate_from_definition(
@@ -714,12 +709,12 @@ class TestGeneratorConvenience:
         assert result.success is True
         assert cg.structure_count == 1
 
-    def test_get_code(self):
+    def test_get_code(self) -> None:
         """Test getting generated code."""
         cg = CodeGenerator()
         structure = cg.register_structure(name="test")
         result = cg.generate(structure.id, OutputLanguage.PYTHON)
-        
+
         code = cg.get_code(result.code_id)
         assert code is not None
         assert code.id == result.code_id
@@ -728,26 +723,26 @@ class TestGeneratorConvenience:
 class TestGeneratorStats:
     """Test generator statistics."""
 
-    def test_get_stats(self):
+    def test_get_stats(self) -> None:
         """Test getting generation statistics."""
         cg = CodeGenerator()
         s1 = cg.register_structure(name="s1")
         s2 = cg.register_structure(name="s2")
         cg.generate(s1.id, OutputLanguage.PYTHON)
         cg.generate(s2.id, OutputLanguage.JAVASCRIPT)
-        
+
         stats = cg.get_stats()
         assert stats.total_structures == 2
         assert stats.total_generated == 2
         assert stats.by_language["PYTHON"] == 1
         assert stats.by_language["JAVASCRIPT"] == 1
 
-    def test_clear(self):
+    def test_clear(self) -> None:
         """Test clearing all data."""
         cg = CodeGenerator()
         cg.register_structure(name="s1")
         cg.add_template("t1", OutputLanguage.PYTHON, "# template")
-        
+
         structures, templates, generated = cg.clear()
         assert structures == 1
         assert templates == 1
