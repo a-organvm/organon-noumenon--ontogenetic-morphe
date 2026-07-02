@@ -2,15 +2,12 @@
 
 from datetime import timedelta
 
-import pytest
-
 from autogenrec.subsystems.academic.academia_manager import (
     AcademiaManager,
-    ResearchStatus,
-    PublicationType,
     LearningStatus,
+    PublicationType,
+    ResearchStatus,
 )
-
 
 # ============================================================================
 # AcademiaManager Tests
@@ -19,7 +16,7 @@ from autogenrec.subsystems.academic.academia_manager import (
 class TestAcademiaManagerBasics:
     """Basic AcademiaManager tests."""
 
-    def test_initialization(self):
+    def test_initialization(self) -> None:
         """Test AcademiaManager initializes correctly."""
         am = AcademiaManager()
         assert am.name == "academia_manager"
@@ -33,7 +30,7 @@ class TestAcademiaManagerBasics:
 class TestResearchProjects:
     """Test research project management."""
 
-    def test_create_project(self):
+    def test_create_project(self) -> None:
         """Test creating a research project."""
         am = AcademiaManager()
         project = am.create_project(
@@ -51,7 +48,7 @@ class TestResearchProjects:
         assert len(project.objectives) == 2
         assert am.project_count == 1
 
-    def test_get_project(self):
+    def test_get_project(self) -> None:
         """Test getting a project by ID."""
         am = AcademiaManager()
         project = am.create_project(title="Test")
@@ -59,7 +56,7 @@ class TestResearchProjects:
         assert retrieved is not None
         assert retrieved.id == project.id
 
-    def test_start_project(self):
+    def test_start_project(self) -> None:
         """Test starting a project."""
         am = AcademiaManager()
         project = am.create_project(title="Test")
@@ -68,7 +65,7 @@ class TestResearchProjects:
         assert started.status == ResearchStatus.IN_PROGRESS
         assert started.started_at is not None
 
-    def test_complete_project(self):
+    def test_complete_project(self) -> None:
         """Test completing a project."""
         am = AcademiaManager()
         project = am.create_project(title="Test")
@@ -79,7 +76,7 @@ class TestResearchProjects:
         assert completed.completed_at is not None
         assert completed.progress_percent == 100.0
 
-    def test_update_project_progress(self):
+    def test_update_project_progress(self) -> None:
         """Test updating project progress."""
         am = AcademiaManager()
         project = am.create_project(title="Test")
@@ -88,25 +85,25 @@ class TestResearchProjects:
         assert updated is not None
         assert updated.progress_percent == 50.0
 
-    def test_get_active_projects(self):
+    def test_get_active_projects(self) -> None:
         """Test getting active projects."""
         am = AcademiaManager()
         p1 = am.create_project(title="Active 1")
         p2 = am.create_project(title="Active 2")
-        p3 = am.create_project(title="Not started")
-        
+        am.create_project(title="Not started")
+
         am.start_project(p1.id)
         am.start_project(p2.id)
-        
+
         active = am.get_active_projects()
         assert len(active) == 2
 
-    def test_project_with_deadline(self):
+    def test_project_with_deadline(self) -> None:
         """Test project with deadline."""
         am = AcademiaManager()
-        from datetime import datetime, UTC, timedelta
+        from datetime import UTC, datetime
         deadline = datetime.now(UTC) + timedelta(days=30)
-        
+
         project = am.create_project(
             title="Deadline Project",
             deadline=deadline,
@@ -117,7 +114,7 @@ class TestResearchProjects:
 class TestPublications:
     """Test publication management."""
 
-    def test_create_publication(self):
+    def test_create_publication(self) -> None:
         """Test creating a publication."""
         am = AcademiaManager()
         pub = am.create_publication(
@@ -133,7 +130,7 @@ class TestPublications:
         assert pub.is_published is False
         assert am.publication_count == 1
 
-    def test_get_publication(self):
+    def test_get_publication(self) -> None:
         """Test getting a publication by ID."""
         am = AcademiaManager()
         pub = am.create_publication(title="Test")
@@ -141,7 +138,7 @@ class TestPublications:
         assert retrieved is not None
         assert retrieved.id == pub.id
 
-    def test_publish(self):
+    def test_publish(self) -> None:
         """Test publishing a publication."""
         am = AcademiaManager()
         pub = am.create_publication(title="Test Paper")
@@ -152,19 +149,19 @@ class TestPublications:
         assert published.doi == "10.1234/test"
         assert published.published_at is not None
 
-    def test_different_publication_types(self):
+    def test_different_publication_types(self) -> None:
         """Test different publication types."""
         am = AcademiaManager()
-        
+
         paper = am.create_publication("Paper", PublicationType.PAPER)
         thesis = am.create_publication("Thesis", PublicationType.THESIS)
         report = am.create_publication("Report", PublicationType.REPORT)
-        
+
         assert paper.publication_type == PublicationType.PAPER
         assert thesis.publication_type == PublicationType.THESIS
         assert report.publication_type == PublicationType.REPORT
 
-    def test_publication_linked_to_project(self):
+    def test_publication_linked_to_project(self) -> None:
         """Test publication linked to project."""
         am = AcademiaManager()
         project = am.create_project(title="Research Project")
@@ -172,19 +169,19 @@ class TestPublications:
             title="Project Paper",
             project_id=project.id,
         )
-        
+
         pubs = am.get_publications_for_project(project.id)
         assert len(pubs) == 1
         assert pubs[0].id == pub.id
 
-    def test_get_published_publications(self):
+    def test_get_published_publications(self) -> None:
         """Test getting published publications."""
         am = AcademiaManager()
         p1 = am.create_publication(title="Published")
-        p2 = am.create_publication(title="Draft")
-        
+        am.create_publication(title="Draft")
+
         am.publish_publication(p1.id)
-        
+
         published = am.get_published_publications()
         assert len(published) == 1
         assert published[0].id == p1.id
@@ -193,7 +190,7 @@ class TestPublications:
 class TestCitations:
     """Test citation management."""
 
-    def test_add_citation(self):
+    def test_add_citation(self) -> None:
         """Test adding a citation."""
         am = AcademiaManager()
         citation = am.add_citation(
@@ -208,7 +205,7 @@ class TestCitations:
         assert len(citation.authors) == 2
         assert am.citation_count == 1
 
-    def test_get_citation(self):
+    def test_get_citation(self) -> None:
         """Test getting a citation by ID."""
         am = AcademiaManager()
         citation = am.add_citation(title="Test Citation")
@@ -216,23 +213,23 @@ class TestCitations:
         assert retrieved is not None
         assert retrieved.id == citation.id
 
-    def test_search_citations_by_title(self):
+    def test_search_citations_by_title(self) -> None:
         """Test searching citations by title."""
         am = AcademiaManager()
         am.add_citation(title="Machine Learning Basics")
         am.add_citation(title="Deep Learning Advances")
         am.add_citation(title="Web Development Guide")
-        
+
         results = am.search_citations("Learning")
         assert len(results) == 2
 
-    def test_search_citations_by_author(self):
+    def test_search_citations_by_author(self) -> None:
         """Test searching citations by author."""
         am = AcademiaManager()
         am.add_citation(title="Paper 1", authors=["John Smith"])
         am.add_citation(title="Paper 2", authors=["Jane Doe"])
         am.add_citation(title="Paper 3", authors=["John Doe"])
-        
+
         results = am.search_citations("John")
         assert len(results) == 2
 
@@ -240,7 +237,7 @@ class TestCitations:
 class TestLearningCycles:
     """Test learning cycle management."""
 
-    def test_create_learning_cycle(self):
+    def test_create_learning_cycle(self) -> None:
         """Test creating a learning cycle."""
         am = AcademiaManager()
         cycle = am.create_learning_cycle(
@@ -255,7 +252,7 @@ class TestLearningCycles:
         assert len(cycle.topics) == 3
         assert am.learning_cycle_count == 1
 
-    def test_get_learning_cycle(self):
+    def test_get_learning_cycle(self) -> None:
         """Test getting a learning cycle by ID."""
         am = AcademiaManager()
         cycle = am.create_learning_cycle(title="Test")
@@ -263,37 +260,37 @@ class TestLearningCycles:
         assert retrieved is not None
         assert retrieved.id == cycle.id
 
-    def test_update_learning_progress(self):
+    def test_update_learning_progress(self) -> None:
         """Test updating learning progress."""
         am = AcademiaManager()
         cycle = am.create_learning_cycle(
             title="Test Course",
             topics=["Topic 1", "Topic 2"],
         )
-        
+
         updated = am.update_learning_progress(cycle.id, 50.0, "Topic 1")
         assert updated is not None
         assert updated.progress_percent == 50.0
         assert updated.status == LearningStatus.IN_PROGRESS
         assert "Topic 1" in updated.completed_topics
 
-    def test_complete_learning_cycle(self):
+    def test_complete_learning_cycle(self) -> None:
         """Test completing a learning cycle."""
         am = AcademiaManager()
         cycle = am.create_learning_cycle(title="Test")
-        
+
         completed = am.update_learning_progress(cycle.id, 100.0)
         assert completed is not None
         assert completed.status == LearningStatus.COMPLETED
         assert completed.completed_at is not None
 
-    def test_get_learner_cycles(self):
+    def test_get_learner_cycles(self) -> None:
         """Test getting cycles for a learner."""
         am = AcademiaManager()
         am.create_learning_cycle(title="Course 1", learner_id="learner_1")
         am.create_learning_cycle(title="Course 2", learner_id="learner_1")
         am.create_learning_cycle(title="Course 3", learner_id="learner_2")
-        
+
         cycles = am.get_learner_cycles("learner_1")
         assert len(cycles) == 2
 
@@ -301,73 +298,73 @@ class TestLearningCycles:
 class TestArchives:
     """Test archive management."""
 
-    def test_archive_publication(self):
+    def test_archive_publication(self) -> None:
         """Test archiving a publication."""
         am = AcademiaManager()
         pub = am.create_publication(title="Paper to Archive", content="Some content")
-        
+
         archive = am.archive_publication(pub.id)
         assert archive is not None
         assert archive.source_id == pub.id
         assert archive.archive_type == "publication"
         assert am.archive_count == 1
 
-    def test_archive_completed_project(self):
+    def test_archive_completed_project(self) -> None:
         """Test archiving a completed project."""
         am = AcademiaManager()
         project = am.create_project(title="Project to Archive")
         am.start_project(project.id)
         am.complete_project(project.id)
-        
+
         archive = am.archive_project(project.id)
         assert archive is not None
         assert archive.source_id == project.id
         assert archive.archive_type == "project"
 
-    def test_cannot_archive_incomplete_project(self):
+    def test_cannot_archive_incomplete_project(self) -> None:
         """Test that incomplete projects cannot be archived."""
         am = AcademiaManager()
         project = am.create_project(title="Incomplete Project")
-        
+
         archive = am.archive_project(project.id)
         assert archive is None
 
-    def test_get_archive_increments_access(self):
+    def test_get_archive_increments_access(self) -> None:
         """Test that getting an archive increments access count."""
         am = AcademiaManager()
         pub = am.create_publication(title="Test")
         archive = am.archive_publication(pub.id)
-        
+
         # First access
-        retrieved1 = am.get_archive(archive.id)
-        assert retrieved1.access_count == 1
-        
+        retrieved1 = am.get_archive(archive.id)  # type: ignore
+        assert retrieved1.access_count == 1  # type: ignore
+
         # Second access
-        retrieved2 = am.get_archive(archive.id)
-        assert retrieved2.access_count == 2
+        retrieved2 = am.get_archive(archive.id)  # type: ignore
+        assert retrieved2.access_count == 2  # type: ignore
 
 
 class TestAcademiaStats:
     """Test academia statistics."""
 
-    def test_get_stats(self):
+    def test_get_stats(self) -> None:
         """Test getting academia statistics."""
         am = AcademiaManager()
-        
+
         # Create some data
         p1 = am.create_project(title="Project 1")
         am.create_project(title="Project 2")
         am.start_project(p1.id)
         am.complete_project(p1.id)
-        
+
         pub = am.create_publication(title="Pub 1")
         am.create_publication(title="Pub 2")
         am.publish_publication(pub.id)
-        
+
         am.add_citation(title="Citation 1")
         am.create_learning_cycle(title="Course 1")
         am.archive_publication(pub.id)
-        
+
         stats = am.get_stats()
         assert stats.total_projects == 2
         assert stats.completed_projects == 1
@@ -377,17 +374,17 @@ class TestAcademiaStats:
         assert stats.total_learning_cycles == 1
         assert stats.total_archives == 1
 
-    def test_clear(self):
+    def test_clear(self) -> None:
         """Test clearing all data."""
         am = AcademiaManager()
-        
+
         am.create_project(title="Project")
         am.create_publication(title="Pub")
         am.add_citation(title="Citation")
         am.create_learning_cycle(title="Course")
         pub = am.create_publication(title="Archive this")
         am.archive_publication(pub.id)
-        
+
         projects, pubs, citations, cycles, archives = am.clear()
         assert projects == 1
         assert pubs == 2
