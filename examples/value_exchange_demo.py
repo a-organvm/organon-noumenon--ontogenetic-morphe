@@ -13,19 +13,19 @@ ACCOUNTS -> TRANSFERS -> BLOCKCHAIN -> MONETIZATION
 
 from decimal import Decimal
 
-from autogenrec.subsystems.value.value_exchange_manager import (
-    ValueExchangeManager,
-    CurrencyType,
-)
 from autogenrec.subsystems.value.blockchain_simulator import BlockchainSimulator
 from autogenrec.subsystems.value.process_monetizer import (
     ProcessMonetizer,
     ProductType,
     RevenueModel,
 )
+from autogenrec.subsystems.value.value_exchange_manager import (
+    CurrencyType,
+    ValueExchangeManager,
+)
 
 
-def main():
+def main() -> None:
     print("=" * 60)
     print("Value Exchange Demo")
     print("=" * 60)
@@ -89,22 +89,22 @@ def main():
 
     # Alice sends tokens to Bob
     result1 = exchange.transfer(alice.id, bob.id, Decimal("100"))
-    print(f"  Transfer: Alice -> Bob: 100 TOKENS")
+    print("  Transfer: Alice -> Bob: 100 TOKENS")
     print(f"    Success: {result1.success}")
     print(f"    Transaction ID: {result1.transaction_id}")
 
     # Bob sends some back to Alice
     result2 = exchange.transfer(bob.id, alice.id, Decimal("25"))
-    print(f"  Transfer: Bob -> Alice: 25 TOKENS")
+    print("  Transfer: Bob -> Alice: 25 TOKENS")
     print(f"    Success: {result2.success}")
     print(f"    Transaction ID: {result2.transaction_id}")
 
     # Check balances
     alice_updated = exchange.get_account(alice.id)
     bob_updated = exchange.get_account(bob.id)
-    print(f"\n  Updated Balances:")
-    print(f"    Alice: {alice_updated.balance} TOKENS")
-    print(f"    Bob: {bob_updated.balance} TOKENS")
+    print("\n  Updated Balances:")
+    print(f"    Alice: {alice_updated.balance} TOKENS")  # type: ignore
+    print(f"    Bob: {bob_updated.balance} TOKENS")  # type: ignore
     print()
 
     # =========================================================================
@@ -140,14 +140,14 @@ def main():
 
     # Mine a block
     block_result = blockchain.mine_block()
-    print(f"\n  Mined Block:")
+    print("\n  Mined Block:")
     print(f"    Block Number: {block_result.block_number}")
     print(f"    Transactions: {block_result.transaction_count}")
     print(f"    Hash: {block_result.block_hash[:16]}...")
 
     # Check chain stats
     chain_stats = blockchain.get_stats()
-    print(f"\n  Chain Statistics:")
+    print("\n  Chain Statistics:")
     print(f"    Total Blocks: {chain_stats.block_height}")
     print(f"    Total Transactions: {chain_stats.total_transactions}")
     print()
@@ -174,31 +174,31 @@ def main():
 
     # Activate the process
     monetizer.activate_process(api_service.id)
-    print(f"    Status: ACTIVE")
+    print("    Status: ACTIVE")
 
     # Simulate usage
-    print(f"\n  Recording Usage:")
+    print("\n  Recording Usage:")
     usage1 = monetizer.record_usage(api_service.id, "user_alice", Decimal("10"))
-    print(f"    Alice: 10 API calls = {usage1.total_value} TOKENS")
+    print(f"    Alice: 10 API calls = {usage1.total_value} TOKENS")  # type: ignore
 
     usage2 = monetizer.record_usage(api_service.id, "user_bob", Decimal("5"))
-    print(f"    Bob: 5 API calls = {usage2.total_value} TOKENS")
+    print(f"    Bob: 5 API calls = {usage2.total_value} TOKENS")  # type: ignore
 
     usage3 = monetizer.record_usage(api_service.id, "user_alice", Decimal("3"))
-    print(f"    Alice: 3 more calls = {usage3.total_value} TOKENS")
+    print(f"    Alice: 3 more calls = {usage3.total_value} TOKENS")  # type: ignore
 
     # Check process revenue
     updated_process = monetizer.get_process(api_service.id)
-    print(f"\n  Process Revenue:")
-    print(f"    Total Revenue: {updated_process.total_revenue} TOKENS")
-    print(f"    Usage Count: {updated_process.usage_count}")
+    print("\n  Process Revenue:")
+    print(f"    Total Revenue: {updated_process.total_revenue} TOKENS")  # type: ignore
+    print(f"    Usage Count: {updated_process.usage_count}")  # type: ignore
 
     # Create payout
     payout = monetizer.create_payout(api_service.id)
-    print(f"\n  Payout Created:")
-    print(f"    Gross Amount: {payout.amount} TOKENS")
-    print(f"    Platform Fee: {payout.fee} TOKENS")
-    print(f"    Net Amount: {payout.net_amount} TOKENS")
+    print("\n  Payout Created:")
+    print(f"    Gross Amount: {payout.amount} TOKENS")  # type: ignore
+    print(f"    Platform Fee: {payout.fee} TOKENS")  # type: ignore
+    print(f"    Net Amount: {payout.net_amount} TOKENS")  # type: ignore
     print()
 
     # =========================================================================
@@ -208,8 +208,8 @@ def main():
     print("-" * 40)
 
     # Transfer payout to creator
-    payout_result = exchange.transfer(platform.id, creator.id, payout.net_amount)
-    print(f"  Platform -> Creator: {payout.net_amount} TOKENS")
+    payout_result = exchange.transfer(platform.id, creator.id, payout.net_amount)  # type: ignore
+    print(f"  Platform -> Creator: {payout.net_amount} TOKENS")  # type: ignore
     print(f"    Success: {payout_result.success}")
 
     # Record payout on blockchain
@@ -219,8 +219,8 @@ def main():
         data={
             "type": "payout",
             "process_id": api_service.id,
-            "amount": str(payout.net_amount),
-            "payout_id": payout.id,
+            "amount": str(payout.net_amount),  # type: ignore
+            "payout_id": payout.id,  # type: ignore
         },
     )
     blockchain.mine_block()
@@ -229,9 +229,9 @@ def main():
     # Final balances
     creator_final = exchange.get_account(creator.id)
     platform_final = exchange.get_account(platform.id)
-    print(f"\n  Final Balances:")
-    print(f"    Creator: {creator_final.balance} TOKENS")
-    print(f"    Platform: {platform_final.balance} TOKENS")
+    print("\n  Final Balances:")
+    print(f"    Creator: {creator_final.balance} TOKENS")  # type: ignore
+    print(f"    Platform: {platform_final.balance} TOKENS")  # type: ignore
     print()
 
     # =========================================================================
@@ -244,17 +244,17 @@ def main():
     monetizer_stats = monetizer.get_stats()
     chain_stats = blockchain.get_stats()
 
-    print(f"  Exchange:")
+    print("  Exchange:")
     print(f"    Total Accounts: {exchange_stats.total_accounts}")
     print(f"    Total Transactions: {exchange_stats.total_transactions}")
     print(f"    Total Volume: {exchange_stats.total_volume} TOKENS")
 
-    print(f"  Monetizer:")
+    print("  Monetizer:")
     print(f"    Active Processes: {monetizer_stats.active_processes}")
     print(f"    Total Revenue: {monetizer_stats.total_revenue} TOKENS")
     print(f"    Total Payouts: {monetizer_stats.total_payouts}")
 
-    print(f"  Blockchain:")
+    print("  Blockchain:")
     print(f"    Chain Length: {chain_stats.block_height} blocks")
     print(f"    Total Transactions: {chain_stats.total_transactions}")
 
