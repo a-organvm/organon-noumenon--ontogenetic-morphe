@@ -1,10 +1,11 @@
 """Tests for routing subsystems: NodeRouter and SignalThresholdGuard."""
 
-import pytest
 from datetime import UTC, datetime
 
-from autogenrec.core.subsystem import SubsystemType
+import pytest
+
 from autogenrec.core.signals import Signal, SignalDomain
+from autogenrec.core.subsystem import SubsystemType
 from autogenrec.core.symbolic import (
     SymbolicInput,
     SymbolicValue,
@@ -13,7 +14,6 @@ from autogenrec.core.symbolic import (
 from autogenrec.subsystems.routing.node_router import (
     Node,
     NodeRouter,
-    NodeStatus,
     NodeType,
     Route,
     RouteOptimizer,
@@ -22,8 +22,6 @@ from autogenrec.subsystems.routing.node_router import (
     RoutingTable,
 )
 from autogenrec.subsystems.routing.signal_threshold_guard import (
-    ConversionMode,
-    ConversionPolicy,
     DomainConverter,
     SignalThresholdGuard,
     ThresholdPolicy,
@@ -285,7 +283,7 @@ class TestNodeRouter:
                 ),
             )
         )
-        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))
+        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))  # type: ignore
 
         filtered = await router.intake(input_data, ctx)
         decisions = await router.process(filtered, ctx)
@@ -482,7 +480,7 @@ class TestSignalThresholdGuard:
             ),
             metadata={"target_domain": "DIGITAL"},
         )
-        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC), metadata={"target_domain": "DIGITAL"})
+        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC), metadata={"target_domain": "DIGITAL"})  # type: ignore
 
         filtered = await guard.intake(input_data, ctx)
         results = await guard.process(filtered, ctx)

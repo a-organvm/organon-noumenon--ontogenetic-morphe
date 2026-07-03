@@ -259,7 +259,7 @@ class ValidationEngine:
             ))
 
         # Type-specific validation
-        if condition.operator in ("gt", "lt", "gte", "lte"):
+        if condition.operator in ("gt", "lt", "gte", "lte"):  # noqa: SIM102
             if not isinstance(condition.value, (int, float)):
                 warnings.append(ValidationError(
                     code="TYPE_MISMATCH",
@@ -268,7 +268,7 @@ class ValidationEngine:
                     severity="warning",
                 ))
 
-        if condition.operator in ("in", "not_in"):
+        if condition.operator in ("in", "not_in"):  # noqa: SIM102
             if not isinstance(condition.value, (list, tuple, set, frozenset)):
                 errors.append(ValidationError(
                     code="TYPE_MISMATCH",
@@ -768,7 +768,7 @@ class RuleCompiler(Subsystem):
         """Deactivate a compiled rule."""
         if compiled_id in self._compiled_rules:
             # Create a new rule with deprecated status
-            old = self._compiled_rules[compiled_id]
+            self._compiled_rules[compiled_id]
             # Since CompiledRule is frozen, we need to remove it
             # In a real system, we'd update status in a mutable way
             del self._compiled_rules[compiled_id]
