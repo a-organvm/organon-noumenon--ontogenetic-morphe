@@ -12,16 +12,14 @@ This shows the academic subsystem:
 PROJECT -> PUBLICATION -> CITATION -> ARCHIVE
 """
 
-from datetime import datetime, UTC, timedelta
 
 from autogenrec.subsystems.academic.academia_manager import (
     AcademiaManager,
     PublicationType,
-    ResearchStatus,
 )
 
 
-def main():
+def main() -> None:
     print("=" * 60)
     print("Academic Research Lifecycle Example")
     print("=" * 60)
@@ -64,7 +62,7 @@ def main():
 
     # Start the project
     academia.start_project(project.id)
-    print(f"  [Started] Status: IN_PROGRESS")
+    print("  [Started] Status: IN_PROGRESS")
 
     # Update progress
     milestones = [
@@ -80,7 +78,7 @@ def main():
 
     # Complete the project
     completed = academia.complete_project(project.id)
-    print(f"  [Complete] Status: {completed.status.name}")
+    print(f"  [Complete] Status: {completed.status.name}")  # type: ignore
     print()
 
     # =========================================================================
@@ -128,9 +126,9 @@ def main():
         venue="International Conference on Symbolic Computing",
         doi="10.1234/icsc.2024.recursiq",
     )
-    print(f"  Published: {published.title}")
-    print(f"  Venue: {published.venue}")
-    print(f"  DOI: {published.doi}")
+    print(f"  Published: {published.title}")  # type: ignore
+    print(f"  Venue: {published.venue}")  # type: ignore
+    print(f"  DOI: {published.doi}")  # type: ignore
 
     # Add citations (references used in the paper)
     citations = [
@@ -139,9 +137,9 @@ def main():
         ("Pattern Recognition Methods", ["Brown, A."], 2023, "NeurIPS"),
     ]
 
-    print(f"\n  Adding citations:")
+    print("\n  Adding citations:")
     for title, authors, year, venue in citations:
-        citation = academia.add_citation(
+        academia.add_citation(
             title=title,
             authors=authors,
             year=year,
@@ -176,7 +174,7 @@ def main():
 
     # Progress through learning
     for i, topic in enumerate(cycle.topics, 1):
-        progress = (i / len(cycle.topics)) * 100
+        progress = (i / len(cycle.topics)) * 100  # type: ignore
         updated = academia.update_learning_progress(
             cycle.id,
             progress,
@@ -184,7 +182,7 @@ def main():
         )
         print(f"    [{progress:.0f}%] Completed: {topic}")
 
-    print(f"  Final Status: {updated.status.name}")
+    print(f"  Final Status: {updated.status.name}")  # type: ignore
     print()
 
     # =========================================================================
@@ -196,19 +194,19 @@ def main():
     # Archive the publication
     pub_archive = academia.archive_publication(paper.id)
     print(f"  Archived: {paper.title}")
-    print(f"    Archive ID: {pub_archive.id[:16]}...")
-    print(f"    Type: {pub_archive.archive_type}")
+    print(f"    Archive ID: {pub_archive.id[:16]}...")  # type: ignore
+    print(f"    Type: {pub_archive.archive_type}")  # type: ignore
 
     # Archive the project
     proj_archive = academia.archive_project(project.id)
     print(f"  Archived: {project.title}")
-    print(f"    Archive ID: {proj_archive.id[:16]}...")
-    print(f"    Type: {proj_archive.archive_type}")
+    print(f"    Archive ID: {proj_archive.id[:16]}...")  # type: ignore
+    print(f"    Type: {proj_archive.archive_type}")  # type: ignore
 
     # Access archived item (increments access count)
-    retrieved = academia.get_archive(pub_archive.id)
-    retrieved = academia.get_archive(pub_archive.id)
-    print(f"\n  Archive Access Count: {retrieved.access_count}")
+    retrieved = academia.get_archive(pub_archive.id)  # type: ignore
+    retrieved = academia.get_archive(pub_archive.id)  # type: ignore
+    print(f"\n  Archive Access Count: {retrieved.access_count}")  # type: ignore
     print()
 
     # =========================================================================
@@ -219,11 +217,11 @@ def main():
 
     stats = academia.get_stats()
 
-    print(f"  Projects:")
+    print("  Projects:")
     print(f"    Total: {stats.total_projects}")
     print(f"    Completed: {stats.completed_projects}")
 
-    print(f"  Publications:")
+    print("  Publications:")
     print(f"    Total: {stats.total_publications}")
     print(f"    Published: {stats.published_count}")
 
