@@ -637,7 +637,7 @@ class LocationResolver(Subsystem):
                 place_type = PlaceType.PHYSICAL
 
             coordinates = None
-            if coords := content.get("coordinates"):
+            if coords := content.get("coordinates"):  # noqa: SIM102
                 if isinstance(coords, (list, tuple)) and len(coords) >= 3:
                     coordinates = tuple(float(c) for c in coords[:3])
 
@@ -813,7 +813,7 @@ class LocationResolver(Subsystem):
     ) -> Place:
         """Create and register a new place."""
         coordinates = None
-        if coords := kwargs.get("coordinates"):
+        if coords := kwargs.get("coordinates"):  # noqa: SIM102
             if isinstance(coords, (list, tuple)) and len(coords) >= 3:
                 coordinates = tuple(float(c) for c in coords[:3])
 
