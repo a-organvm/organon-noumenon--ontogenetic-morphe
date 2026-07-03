@@ -1,24 +1,18 @@
 """Tests for Week 7: Identity and Classification subsystems."""
 
 from datetime import UTC, datetime, timedelta
-from decimal import Decimal
 
-import pytest
-
+from autogenrec.subsystems.identity.audience_classifier import (
+    AccessLevel,
+    AudienceClassifier,
+    RuleOperator,
+    SegmentType,
+)
 from autogenrec.subsystems.identity.mask_generator import (
     MaskGenerator,
-    MaskType,
     MaskState,
-    Mask,
-    MaskLayer,
+    MaskType,
 )
-from autogenrec.subsystems.identity.audience_classifier import (
-    AudienceClassifier,
-    SegmentType,
-    AccessLevel,
-    RuleOperator,
-)
-
 
 # ============================================================================
 # MaskGenerator Tests
@@ -27,14 +21,14 @@ from autogenrec.subsystems.identity.audience_classifier import (
 class TestMaskGeneratorBasics:
     """Basic MaskGenerator tests."""
 
-    def test_initialization(self):
+    def test_initialization(self) -> None:
         """Test MaskGenerator initializes correctly."""
         mg = MaskGenerator()
         assert mg.name == "mask_generator"
         assert mg.mask_count == 0
         assert mg.assignment_count == 0
 
-    def test_generate_basic_mask(self):
+    def test_generate_basic_mask(self) -> None:
         """Test generating a basic mask."""
         mg = MaskGenerator()
         mask = mg.generate_mask(
@@ -51,7 +45,7 @@ class TestMaskGeneratorBasics:
         assert "user" in mask.roles
         assert mg.mask_count == 1
 
-    def test_get_mask(self):
+    def test_get_mask(self) -> None:
         """Test retrieving a mask by ID."""
         mg = MaskGenerator()
         mask = mg.generate_mask(name="test_mask")
@@ -60,7 +54,7 @@ class TestMaskGeneratorBasics:
         assert retrieved.id == mask.id
         assert retrieved.name == mask.name
 
-    def test_get_nonexistent_mask(self):
+    def test_get_nonexistent_mask(self) -> None:
         """Test getting a nonexistent mask returns None."""
         mg = MaskGenerator()
         assert mg.get_mask("nonexistent") is None
@@ -69,7 +63,7 @@ class TestMaskGeneratorBasics:
 class TestMaskTypes:
     """Test different mask types."""
 
-    def test_temporal_mask(self):
+    def test_temporal_mask(self) -> None:
         """Test generating a temporal mask."""
         mg = MaskGenerator()
         mask = mg.generate_temporal_mask(
@@ -81,16 +75,16 @@ class TestMaskTypes:
         assert mask.valid_until is not None
         assert mask.valid_until > mask.valid_from
 
-    def test_temporal_mask_default_duration(self):
+    def test_temporal_mask_default_duration(self) -> None:
         """Test temporal mask default 24h duration."""
         mg = MaskGenerator()
         mask = mg.generate_temporal_mask(name="temp_mask")
         assert mask.mask_type == MaskType.TEMPORAL
         # Should have approximately 24h validity
-        diff = mask.valid_until - mask.valid_from
+        diff = mask.valid_until - mask.valid_from  # type: ignore
         assert diff >= timedelta(hours=23)
 
-    def test_anonymous_mask(self):
+    def test_anonymous_mask(self) -> None:
         """Test generating an anonymous mask."""
         mg = MaskGenerator()
         mask = mg.generate_anonymous_mask()
@@ -98,7 +92,7 @@ class TestMaskTypes:
         assert mask.opacity == 1.0  # Fully opaque
         assert mask.name.startswith("anon_")
 
-    def test_role_mask(self):
+    def test_role_mask(self) -> None:
         """Test generating a role mask."""
         mg = MaskGenerator()
         mask = mg.generate_mask(
@@ -114,7 +108,7 @@ class TestMaskTypes:
 class TestMaskAssignment:
     """Test mask assignment functionality."""
 
-    def test_assign_mask(self):
+    def test_assign_mask(self) -> None:
         """Test assigning a mask to an entity."""
         mg = MaskGenerator()
         mask = mg.generate_mask(name="test_mask")
@@ -128,7 +122,7 @@ class TestMaskAssignment:
         assert assignment.entity_id == "user_123"
         assert mg.assignment_count == 1
 
-    def test_assign_nonexistent_mask(self):
+    def test_assign_nonexistent_mask(self) -> None:
         """Test assigning a nonexistent mask returns None."""
         mg = MaskGenerator()
         assignment = mg.assign_mask(
@@ -137,27 +131,27 @@ class TestMaskAssignment:
         )
         assert assignment is None
 
-    def test_get_entity_assignments(self):
+    def test_get_entity_assignments(self) -> None:
         """Test getting all assignments for an entity."""
         mg = MaskGenerator()
         mask1 = mg.generate_mask(name="mask1")
         mask2 = mg.generate_mask(name="mask2")
-        
+
         mg.assign_mask(mask1.id, "user_123")
         mg.assign_mask(mask2.id, "user_123")
-        
+
         assignments = mg.get_entity_assignments("user_123")
         assert len(assignments) == 2
 
-    def test_revoke_assignment(self):
+    def test_revoke_assignment(self) -> None:
         """Test revoking a mask assignment."""
         mg = MaskGenerator()
         mask = mg.generate_mask(name="test_mask")
         assignment = mg.assign_mask(mask.id, "user_123")
-        
-        result = mg.revoke_assignment(assignment.id)
+
+        result = mg.revoke_assignment(assignment.id)  # type: ignore
         assert result is True
-        
+
         # Assignment should be gone
         assignments = mg.get_entity_assignments("user_123")
         assert len(assignments) == 0
@@ -166,7 +160,7 @@ class TestMaskAssignment:
 class TestMaskComposition:
     """Test mask composition functionality."""
 
-    def test_compose_masks(self):
+    def test_compose_masks(self) -> None:
         """Test composing multiple masks."""
         mg = MaskGenerator()
         mask1 = mg.generate_mask(
@@ -179,12 +173,12 @@ class TestMaskComposition:
             attributes=["phone"],
             roles=["premium"],
         )
-        
+
         composed = mg.compose_mask(
             name="combined_mask",
             mask_ids=[mask1.id, mask2.id],
         )
-        
+
         assert composed is not None
         assert composed.mask_type == MaskType.COMPOSITE
         assert "name" in composed.attributes
@@ -195,7 +189,7 @@ class TestMaskComposition:
         assert mask1.id in composed.parent_mask_ids
         assert mask2.id in composed.parent_mask_ids
 
-    def test_compose_empty_list(self):
+    def test_compose_empty_list(self) -> None:
         """Test composing with empty list returns None."""
         mg = MaskGenerator()
         composed = mg.compose_mask(name="empty", mask_ids=[])
@@ -205,36 +199,36 @@ class TestMaskComposition:
 class TestMaskStateManagement:
     """Test mask state management."""
 
-    def test_suspend_mask(self):
+    def test_suspend_mask(self) -> None:
         """Test suspending a mask."""
         mg = MaskGenerator()
         mask = mg.generate_mask(name="test_mask")
-        
+
         updated = mg.suspend_mask(mask.id)
         assert updated is not None
         assert updated.state == MaskState.SUSPENDED
 
-    def test_revoke_mask(self):
+    def test_revoke_mask(self) -> None:
         """Test revoking a mask."""
         mg = MaskGenerator()
         mask = mg.generate_mask(name="test_mask")
-        
+
         updated = mg.revoke_mask(mask.id)
         assert updated is not None
         assert updated.state == MaskState.REVOKED
 
-    def test_get_active_masks(self):
+    def test_get_active_masks(self) -> None:
         """Test getting active masks."""
         mg = MaskGenerator()
         mask1 = mg.generate_mask(name="active_mask")
         mask2 = mg.generate_mask(name="suspended_mask")
         mg.suspend_mask(mask2.id)
-        
+
         active = mg.get_active_masks()
         assert len(active) == 1
         assert active[0].id == mask1.id
 
-    def test_check_expired_masks(self):
+    def test_check_expired_masks(self) -> None:
         """Test checking for expired masks."""
         mg = MaskGenerator()
         # Create an already-expired mask
@@ -244,7 +238,7 @@ class TestMaskStateManagement:
             mask_type=MaskType.TEMPORAL,
             valid_until=past,
         )
-        
+
         expired = mg.check_expired_masks()
         assert len(expired) == 1
         assert expired[0].id == mask.id
@@ -253,26 +247,26 @@ class TestMaskStateManagement:
 class TestMaskStats:
     """Test mask statistics."""
 
-    def test_get_stats(self):
+    def test_get_stats(self) -> None:
         """Test getting mask statistics."""
         mg = MaskGenerator()
         mg.generate_mask(name="mask1", mask_type=MaskType.IDENTITY)
         mg.generate_mask(name="mask2", mask_type=MaskType.ROLE)
         mg.generate_mask(name="mask3", mask_type=MaskType.IDENTITY)
-        
+
         stats = mg.get_stats()
         assert stats.total_masks == 3
         assert stats.active_masks == 3
         assert stats.masks_by_type["IDENTITY"] == 2
         assert stats.masks_by_type["ROLE"] == 1
 
-    def test_clear(self):
+    def test_clear(self) -> None:
         """Test clearing all data."""
         mg = MaskGenerator()
         mg.generate_mask(name="mask1")
         mask = mg.generate_mask(name="mask2")
         mg.assign_mask(mask.id, "user_123")
-        
+
         masks, assignments = mg.clear()
         assert masks == 2
         assert assignments == 1
@@ -287,7 +281,7 @@ class TestMaskStats:
 class TestAudienceClassifierBasics:
     """Basic AudienceClassifier tests."""
 
-    def test_initialization(self):
+    def test_initialization(self) -> None:
         """Test AudienceClassifier initializes correctly."""
         ac = AudienceClassifier()
         assert ac.name == "audience_classifier"
@@ -295,7 +289,7 @@ class TestAudienceClassifierBasics:
         assert ac.member_count == 0
         assert ac.rule_count == 0
 
-    def test_create_segment(self):
+    def test_create_segment(self) -> None:
         """Test creating a segment."""
         ac = AudienceClassifier()
         segment = ac.create_segment(
@@ -310,7 +304,7 @@ class TestAudienceClassifierBasics:
         assert segment.access_level == AccessLevel.PREMIUM
         assert ac.segment_count == 1
 
-    def test_get_segment(self):
+    def test_get_segment(self) -> None:
         """Test getting a segment by ID."""
         ac = AudienceClassifier()
         segment = ac.create_segment(name="test")
@@ -318,7 +312,7 @@ class TestAudienceClassifierBasics:
         assert retrieved is not None
         assert retrieved.id == segment.id
 
-    def test_get_segment_by_name(self):
+    def test_get_segment_by_name(self) -> None:
         """Test getting a segment by name."""
         ac = AudienceClassifier()
         segment = ac.create_segment(name="premium")
@@ -330,7 +324,7 @@ class TestAudienceClassifierBasics:
 class TestSegmentTypes:
     """Test different segment types."""
 
-    def test_tier_segment(self):
+    def test_tier_segment(self) -> None:
         """Test creating a tier segment."""
         ac = AudienceClassifier()
         segment = ac.create_segment(
@@ -341,7 +335,7 @@ class TestSegmentTypes:
         assert segment.segment_type == SegmentType.TIER
         assert segment.priority == 10
 
-    def test_behavioral_segment(self):
+    def test_behavioral_segment(self) -> None:
         """Test creating a behavioral segment."""
         ac = AudienceClassifier()
         segment = ac.create_segment(
@@ -350,7 +344,7 @@ class TestSegmentTypes:
         )
         assert segment.segment_type == SegmentType.BEHAVIORAL
 
-    def test_default_segment(self):
+    def test_default_segment(self) -> None:
         """Test creating a default segment."""
         ac = AudienceClassifier()
         segment = ac.create_segment(
@@ -363,7 +357,7 @@ class TestSegmentTypes:
 class TestClassificationRules:
     """Test classification rules."""
 
-    def test_add_rule(self):
+    def test_add_rule(self) -> None:
         """Test adding a classification rule."""
         ac = AudienceClassifier()
         segment = ac.create_segment(name="premium")
@@ -379,13 +373,13 @@ class TestClassificationRules:
         assert rule.attribute == "subscription"
         assert ac.rule_count == 1
 
-    def test_get_rules_for_segment(self):
+    def test_get_rules_for_segment(self) -> None:
         """Test getting rules for a segment."""
         ac = AudienceClassifier()
         segment = ac.create_segment(name="test")
         ac.add_rule("rule1", segment.id, "attr1", RuleOperator.EQUALS, "val1")
         ac.add_rule("rule2", segment.id, "attr2", RuleOperator.GREATER_THAN, 10)
-        
+
         rules = ac.get_rules_for_segment(segment.id)
         assert len(rules) == 2
 
@@ -393,7 +387,7 @@ class TestClassificationRules:
 class TestMemberManagement:
     """Test member management."""
 
-    def test_register_member(self):
+    def test_register_member(self) -> None:
         """Test registering a member."""
         ac = AudienceClassifier()
         member = ac.register_member(
@@ -407,7 +401,7 @@ class TestMemberManagement:
         assert member.attributes["age"] == 30
         assert ac.member_count == 1
 
-    def test_get_member(self):
+    def test_get_member(self) -> None:
         """Test getting a member by ID."""
         ac = AudienceClassifier()
         member = ac.register_member(name="Test User")
@@ -415,7 +409,7 @@ class TestMemberManagement:
         assert retrieved is not None
         assert retrieved.id == member.id
 
-    def test_get_member_by_external_id(self):
+    def test_get_member_by_external_id(self) -> None:
         """Test getting a member by external ID."""
         ac = AudienceClassifier()
         member = ac.register_member(external_id="ext_123")
@@ -423,7 +417,7 @@ class TestMemberManagement:
         assert retrieved is not None
         assert retrieved.id == member.id
 
-    def test_update_member_attributes(self):
+    def test_update_member_attributes(self) -> None:
         """Test updating member attributes."""
         ac = AudienceClassifier()
         member = ac.register_member(attributes={"level": 1})
@@ -439,10 +433,10 @@ class TestMemberManagement:
 class TestClassification:
     """Test member classification."""
 
-    def test_classify_member_basic(self):
+    def test_classify_member_basic(self) -> None:
         """Test basic member classification."""
         ac = AudienceClassifier()
-        
+
         # Create segment with rule
         segment = ac.create_segment(name="premium")
         ac.add_rule(
@@ -452,18 +446,18 @@ class TestClassification:
             operator=RuleOperator.EQUALS,
             value="premium",
         )
-        
+
         # Register and classify member
         member = ac.register_member(attributes={"subscription": "premium"})
         result = ac.classify_member(member.id)
-        
+
         assert result.success is True
         assert segment.id in result.segments
 
-    def test_classify_member_no_match(self):
+    def test_classify_member_no_match(self) -> None:
         """Test classification with no matching segment."""
         ac = AudienceClassifier()
-        
+
         # Create segment with rule
         segment = ac.create_segment(name="premium")
         ac.add_rule(
@@ -473,21 +467,21 @@ class TestClassification:
             operator=RuleOperator.EQUALS,
             value="premium",
         )
-        
+
         # Register member that doesn't match
         member = ac.register_member(attributes={"subscription": "basic"})
         result = ac.classify_member(member.id)
-        
+
         assert result.success is True
         assert segment.id not in result.segments
 
-    def test_classify_with_default_segment(self):
+    def test_classify_with_default_segment(self) -> None:
         """Test classification falls back to default segment."""
         ac = AudienceClassifier()
-        
+
         # Create default segment
         default = ac.create_segment(name="basic", is_default=True)
-        
+
         # Create premium segment with rule
         premium = ac.create_segment(name="premium")
         ac.add_rule(
@@ -497,48 +491,48 @@ class TestClassification:
             operator=RuleOperator.EQUALS,
             value="premium",
         )
-        
+
         # Member that doesn't match premium
         member = ac.register_member(attributes={"subscription": "free"})
         result = ac.classify_member(member.id)
-        
+
         assert result.success is True
         assert default.id in result.segments
         assert premium.id not in result.segments
 
-    def test_classify_multiple_segments(self):
+    def test_classify_multiple_segments(self) -> None:
         """Test classification into multiple segments."""
         ac = AudienceClassifier()
-        
+
         segment1 = ac.create_segment(name="active")
         ac.add_rule("active_check", segment1.id, "status", RuleOperator.EQUALS, "active")
-        
+
         segment2 = ac.create_segment(name="premium")
         ac.add_rule("premium_check", segment2.id, "tier", RuleOperator.EQUALS, "premium")
-        
+
         member = ac.register_member(attributes={"status": "active", "tier": "premium"})
         result = ac.classify_member(member.id)
-        
+
         assert result.success is True
         assert segment1.id in result.segments
         assert segment2.id in result.segments
 
-    def test_exclusive_segment(self):
+    def test_exclusive_segment(self) -> None:
         """Test exclusive segment stops further classification."""
         ac = AudienceClassifier()
-        
+
         # Create exclusive VIP segment with highest priority
         vip = ac.create_segment(name="vip", is_exclusive=True, priority=100)
         ac.add_rule("vip_check", vip.id, "vip", RuleOperator.EQUALS, True)
-        
+
         # Create another segment
         active = ac.create_segment(name="active", priority=50)
         ac.add_rule("active_check", active.id, "status", RuleOperator.EQUALS, "active")
-        
+
         # Member matches both, but VIP is exclusive
         member = ac.register_member(attributes={"vip": True, "status": "active"})
         result = ac.classify_member(member.id)
-        
+
         assert result.success is True
         assert vip.id in result.segments
         assert active.id not in result.segments  # Stopped due to exclusive
@@ -547,64 +541,64 @@ class TestClassification:
 class TestRuleOperators:
     """Test different rule operators."""
 
-    def test_equals_operator(self):
+    def test_equals_operator(self) -> None:
         """Test EQUALS operator."""
         ac = AudienceClassifier()
         segment = ac.create_segment(name="test")
         ac.add_rule("r", segment.id, "value", RuleOperator.EQUALS, "match")
-        
+
         member = ac.register_member(attributes={"value": "match"})
         result = ac.classify_member(member.id)
         assert segment.id in result.segments
 
-    def test_greater_than_operator(self):
+    def test_greater_than_operator(self) -> None:
         """Test GREATER_THAN operator."""
         ac = AudienceClassifier()
         segment = ac.create_segment(name="test")
         ac.add_rule("r", segment.id, "age", RuleOperator.GREATER_THAN, 18)
-        
+
         member = ac.register_member(attributes={"age": 25})
         result = ac.classify_member(member.id)
         assert segment.id in result.segments
-        
+
         member2 = ac.register_member(attributes={"age": 15})
         result2 = ac.classify_member(member2.id)
         assert segment.id not in result2.segments
 
-    def test_contains_operator(self):
+    def test_contains_operator(self) -> None:
         """Test CONTAINS operator."""
         ac = AudienceClassifier()
         segment = ac.create_segment(name="test")
         ac.add_rule("r", segment.id, "email", RuleOperator.CONTAINS, "@company.com")
-        
+
         member = ac.register_member(attributes={"email": "user@company.com"})
         result = ac.classify_member(member.id)
         assert segment.id in result.segments
 
-    def test_in_operator(self):
+    def test_in_operator(self) -> None:
         """Test IN operator."""
         ac = AudienceClassifier()
         segment = ac.create_segment(name="test")
         ac.add_rule("r", segment.id, "country", RuleOperator.IN, ["US", "CA", "UK"])
-        
+
         member = ac.register_member(attributes={"country": "US"})
         result = ac.classify_member(member.id)
         assert segment.id in result.segments
-        
+
         member2 = ac.register_member(attributes={"country": "FR"})
         result2 = ac.classify_member(member2.id)
         assert segment.id not in result2.segments
 
-    def test_exists_operator(self):
+    def test_exists_operator(self) -> None:
         """Test EXISTS operator."""
         ac = AudienceClassifier()
         segment = ac.create_segment(name="test")
         ac.add_rule("r", segment.id, "premium_features", RuleOperator.EXISTS, None)
-        
+
         member = ac.register_member(attributes={"premium_features": ["a", "b"]})
         result = ac.classify_member(member.id)
         assert segment.id in result.segments
-        
+
         member2 = ac.register_member(attributes={"other": "value"})
         result2 = ac.classify_member(member2.id)
         assert segment.id not in result2.segments
@@ -613,28 +607,28 @@ class TestRuleOperators:
 class TestManualAssignment:
     """Test manual segment assignment."""
 
-    def test_manual_assignment(self):
+    def test_manual_assignment(self) -> None:
         """Test manually assigning a member to a segment."""
         ac = AudienceClassifier()
         segment = ac.create_segment(name="special")
         member = ac.register_member(name="Test User")
-        
+
         membership = ac.assign_to_segment(member.id, segment.id)
         assert membership is not None
         assert membership.member_id == member.id
         assert membership.segment_id == segment.id
 
-    def test_assignment_respects_max_members(self):
+    def test_assignment_respects_max_members(self) -> None:
         """Test assignment respects max_members limit."""
         ac = AudienceClassifier()
         segment = ac.create_segment(name="limited", max_members=1)
-        
+
         member1 = ac.register_member(name="User 1")
         member2 = ac.register_member(name="User 2")
-        
+
         m1 = ac.assign_to_segment(member1.id, segment.id)
         m2 = ac.assign_to_segment(member2.id, segment.id)
-        
+
         assert m1 is not None
         assert m2 is None  # Should fail due to limit
 
@@ -642,21 +636,21 @@ class TestManualAssignment:
 class TestAccessLevels:
     """Test access level functionality."""
 
-    def test_get_member_access_level(self):
+    def test_get_member_access_level(self) -> None:
         """Test getting member's access level."""
         ac = AudienceClassifier()
-        
+
         basic = ac.create_segment(name="basic", access_level=AccessLevel.BASIC)
         premium = ac.create_segment(name="premium", access_level=AccessLevel.PREMIUM)
-        
+
         member = ac.register_member(name="Test User")
         ac.assign_to_segment(member.id, basic.id)
         ac.assign_to_segment(member.id, premium.id)
-        
+
         level = ac.get_member_access_level(member.id)
         assert level == AccessLevel.PREMIUM  # Highest level
 
-    def test_no_membership_returns_none_access(self):
+    def test_no_membership_returns_none_access(self) -> None:
         """Test unassigned member has NONE access."""
         ac = AudienceClassifier()
         member = ac.register_member(name="Test User")
@@ -667,44 +661,44 @@ class TestAccessLevels:
 class TestReclassification:
     """Test member reclassification."""
 
-    def test_reclassify_member(self):
+    def test_reclassify_member(self) -> None:
         """Test reclassifying a member after attribute update."""
         ac = AudienceClassifier()
-        
+
         basic = ac.create_segment(name="basic", is_default=True)
         premium = ac.create_segment(name="premium")
         ac.add_rule("premium_check", premium.id, "tier", RuleOperator.EQUALS, "premium")
-        
+
         # Initially basic
         member = ac.register_member(attributes={"tier": "basic"})
         result1 = ac.classify_member(member.id)
         assert basic.id in result1.segments
         assert premium.id not in result1.segments
-        
+
         # Update to premium
         ac.update_member_attributes(member.id, {"tier": "premium"})
         result2 = ac.reclassify_member(member.id)
-        
+
         assert premium.id in result2.segments
 
 
 class TestAudienceStats:
     """Test audience statistics."""
 
-    def test_get_stats(self):
+    def test_get_stats(self) -> None:
         """Test getting classification statistics."""
         ac = AudienceClassifier()
-        
+
         s1 = ac.create_segment(name="segment1", segment_type=SegmentType.TIER)
         s2 = ac.create_segment(name="segment2", segment_type=SegmentType.BEHAVIORAL)
-        
+
         m1 = ac.register_member(name="User 1")
         m2 = ac.register_member(name="User 2")
-        
+
         ac.assign_to_segment(m1.id, s1.id)
         ac.assign_to_segment(m2.id, s1.id)
         ac.assign_to_segment(m2.id, s2.id)
-        
+
         stats = ac.get_stats()
         assert stats.total_segments == 2
         assert stats.total_members == 2
@@ -712,14 +706,14 @@ class TestAudienceStats:
         assert stats.members_by_segment["segment1"] == 2
         assert stats.members_by_segment["segment2"] == 1
 
-    def test_clear(self):
+    def test_clear(self) -> None:
         """Test clearing all data."""
         ac = AudienceClassifier()
-        
+
         segment = ac.create_segment(name="test")
         ac.add_rule("r", segment.id, "attr", RuleOperator.EQUALS, "val")
         ac.register_member(name="User")
-        
+
         segments, members, rules = ac.clear()
         assert segments == 1
         assert members == 1
