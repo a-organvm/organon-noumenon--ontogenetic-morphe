@@ -1,23 +1,14 @@
 """Tests for core processing subsystems: SymbolicInterpreter and RuleCompiler."""
 
-import pytest
 from datetime import UTC, datetime
+
+import pytest
 
 from autogenrec.core.subsystem import SubsystemType
 from autogenrec.core.symbolic import (
     SymbolicInput,
     SymbolicValue,
     SymbolicValueType,
-)
-from autogenrec.subsystems.core_processing.symbolic_interpreter import (
-    ExtractedSymbol,
-    InterpretationEngine,
-    InterpretiveFramework,
-    Pattern,
-    PatternRecognizer,
-    SymbolCategory,
-    SymbolExtractor,
-    SymbolicInterpreter,
 )
 from autogenrec.subsystems.core_processing.rule_compiler import (
     CompilationEngine,
@@ -27,10 +18,17 @@ from autogenrec.subsystems.core_processing.rule_compiler import (
     RuleCondition,
     RuleDefinition,
     RulePriority,
-    RuleStatus,
     RuleType,
     ValidationEngine,
-    ValidationError,
+)
+from autogenrec.subsystems.core_processing.symbolic_interpreter import (
+    ExtractedSymbol,
+    InterpretationEngine,
+    InterpretiveFramework,
+    PatternRecognizer,
+    SymbolCategory,
+    SymbolExtractor,
+    SymbolicInterpreter,
 )
 
 
@@ -196,7 +194,7 @@ class TestSymbolicInterpreter:
                 SymbolicValue(type=SymbolicValueType.TOKEN, content="invalid"),
             )
         )
-        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))
+        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))  # type: ignore
 
         result = await interpreter.intake(input_data, ctx)
         assert len(result.values) == 1
@@ -215,7 +213,7 @@ class TestSymbolicInterpreter:
                 ),
             )
         )
-        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))
+        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))  # type: ignore
 
         # Run through phases
         filtered = await interpreter.intake(input_data, ctx)
@@ -351,9 +349,9 @@ class TestCompilationEngine:
         result = engine.compile(definition)
 
         assert result.success
-        assert "AND" in result.compiled_rule.condition_bytecode
-        assert "allow" in result.compiled_rule.action_bytecode
-        assert "log" in result.compiled_rule.action_bytecode
+        assert "AND" in result.compiled_rule.condition_bytecode  # type: ignore
+        assert "allow" in result.compiled_rule.action_bytecode  # type: ignore
+        assert "log" in result.compiled_rule.action_bytecode  # type: ignore
 
 
 class TestRuleCompiler:
@@ -379,7 +377,7 @@ class TestRuleCompiler:
                 ),
             )
         )
-        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))
+        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))  # type: ignore
 
         result = await compiler.intake(input_data, ctx)
         assert len(result.values) == 1
@@ -407,7 +405,7 @@ class TestRuleCompiler:
                 ),
             )
         )
-        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))
+        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))  # type: ignore
 
         # Run through phases
         filtered = await compiler.intake(input_data, ctx)
@@ -495,7 +493,7 @@ class TestRuleDefinitionParsing:
                 ),
             )
         )
-        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))
+        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))  # type: ignore
 
         filtered = await compiler.intake(input_data, ctx)
         results = await compiler.process(filtered, ctx)
@@ -505,6 +503,6 @@ class TestRuleDefinitionParsing:
 
         # Check the compiled rule
         compiled = results[0].compiled_rule
-        assert compiled.name == "complete_rule"
-        assert compiled.rule_type == RuleType.TRANSFORMATION
-        assert compiled.priority == RulePriority.HIGH.value
+        assert compiled.name == "complete_rule"  # type: ignore
+        assert compiled.rule_type == RuleType.TRANSFORMATION  # type: ignore
+        assert compiled.priority == RulePriority.HIGH.value  # type: ignore
