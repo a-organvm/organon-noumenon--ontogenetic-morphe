@@ -1,7 +1,8 @@
 """Tests for conflict subsystems: ConflictResolver and ArbitrationEngine."""
 
-import pytest
 from datetime import UTC, datetime
+
+import pytest
 
 from autogenrec.core.subsystem import SubsystemType
 from autogenrec.core.symbolic import (
@@ -9,28 +10,24 @@ from autogenrec.core.symbolic import (
     SymbolicValue,
     SymbolicValueType,
 )
-from autogenrec.subsystems.conflict.conflict_resolver import (
-    Conflict,
-    ConflictDetector,
-    ConflictResolver,
-    ConflictSeverity,
-    ConflictType,
-    ConflictingValue,
-    ResolutionEngine,
-    ResolutionResult,
-    ResolutionStrategy,
-)
 from autogenrec.subsystems.conflict.arbitration_engine import (
     ArbitrationEngine,
-    ArbitrationRule,
     Argument,
     DeliberationEngine,
     Dispute,
     DisputeType,
     Evidence,
     Party,
-    Verdict,
     VerdictType,
+)
+from autogenrec.subsystems.conflict.conflict_resolver import (
+    Conflict,
+    ConflictDetector,
+    ConflictingValue,
+    ConflictResolver,
+    ConflictType,
+    ResolutionEngine,
+    ResolutionStrategy,
 )
 
 
@@ -237,7 +234,7 @@ class TestConflictResolver:
                 ),
             )
         )
-        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))
+        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))  # type: ignore
 
         filtered = await resolver.intake(input_data, ctx)
         results = await resolver.process(filtered, ctx)
@@ -314,7 +311,7 @@ class TestArbitrationEngine:
 
         assert evidence is not None
         updated = engine.get_dispute(dispute.id)
-        assert len(updated.evidence) == 1
+        assert len(updated.evidence) == 1  # type: ignore
 
     def test_add_argument(self) -> None:
         engine = ArbitrationEngine()
@@ -333,7 +330,7 @@ class TestArbitrationEngine:
 
         assert argument is not None
         updated = engine.get_dispute(dispute.id)
-        assert len(updated.arguments) == 1
+        assert len(updated.arguments) == 1  # type: ignore
 
     def test_render_verdict(self) -> None:
         engine = ArbitrationEngine()
@@ -405,7 +402,7 @@ class TestArbitrationEngine:
                 ),
             )
         )
-        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))
+        ctx = ProcessContext[dict](iteration=1, started_at=datetime.now(UTC))  # type: ignore
 
         filtered = await engine.intake(input_data, ctx)
         results = await engine.process(filtered, ctx)
