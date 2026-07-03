@@ -12,31 +12,42 @@ Demonstrates:
 This shows the complete organon-noumenon architecture in action.
 """
 
-from datetime import datetime, UTC, timedelta
 from decimal import Decimal
-
-# Identity subsystems
-from autogenrec.subsystems.identity.mask_generator import (
-    MaskGenerator,
-    MaskType,
-)
-from autogenrec.subsystems.identity.audience_classifier import (
-    AudienceClassifier,
-    SegmentType,
-    AccessLevel,
-    RuleOperator,
-)
 
 # Academic subsystems
 from autogenrec.subsystems.academic.academia_manager import (
     AcademiaManager,
     PublicationType,
 )
+from autogenrec.subsystems.core_processing.code_generator import (
+    CodeGenerator,
+    OutputLanguage,
+)
+from autogenrec.subsystems.identity.audience_classifier import (
+    AccessLevel,
+    AudienceClassifier,
+    RuleOperator,
+    SegmentType,
+)
 
-# Value subsystems
-from autogenrec.subsystems.value.value_exchange_manager import (
-    ValueExchangeManager,
-    CurrencyType,
+# Identity subsystems
+from autogenrec.subsystems.identity.mask_generator import (
+    MaskGenerator,
+    MaskType,
+)
+from autogenrec.subsystems.temporal.location_resolver import (
+    LocationResolver,
+    PlaceType,
+    SpatialRelation,
+)
+
+# Temporal subsystems
+from autogenrec.subsystems.temporal.time_manager import TimeManager
+
+# Transformation subsystems
+from autogenrec.subsystems.transformation.consumption_manager import (
+    ConsumptionManager,
+    ResourceType,
 )
 from autogenrec.subsystems.value.blockchain_simulator import BlockchainSimulator
 from autogenrec.subsystems.value.process_monetizer import (
@@ -45,26 +56,14 @@ from autogenrec.subsystems.value.process_monetizer import (
     RevenueModel,
 )
 
-# Transformation subsystems
-from autogenrec.subsystems.transformation.consumption_manager import (
-    ConsumptionManager,
-    ResourceType,
-)
-from autogenrec.subsystems.core_processing.code_generator import (
-    CodeGenerator,
-    OutputLanguage,
-)
-
-# Temporal subsystems
-from autogenrec.subsystems.temporal.time_manager import TimeManager, CycleType
-from autogenrec.subsystems.temporal.location_resolver import (
-    LocationResolver,
-    PlaceType,
-    SpatialRelation,
+# Value subsystems
+from autogenrec.subsystems.value.value_exchange_manager import (
+    CurrencyType,
+    ValueExchangeManager,
 )
 
 
-def main():
+def main() -> None:
     print("=" * 70)
     print("Full System Demo: Research-to-Revenue Pipeline")
     print("=" * 70)
@@ -90,7 +89,7 @@ def main():
     monetizer = ProcessMonetizer()
     consumption = ConsumptionManager()
     generator = CodeGenerator()
-    time_mgr = TimeManager()
+    TimeManager()
     location = LocationResolver()
 
     print("  All 10 subsystems initialized")
@@ -191,8 +190,8 @@ def main():
     academia.update_project_progress(project.id, 50.0)
     academia.update_project_progress(project.id, 75.0)
     academia.complete_project(project.id)
-    print(f"  Progress: 0% -> 25% -> 50% -> 75% -> 100%")
-    print(f"  Status: COMPLETED")
+    print("  Progress: 0% -> 25% -> 50% -> 75% -> 100%")
+    print("  Status: COMPLETED")
 
     # Create and publish paper
     print("\n[Publication]")
@@ -225,14 +224,14 @@ def main():
         venue="International Conference on Symbolic Computing",
         doi="10.1234/icsc.2024.001",
     )
-    print(f"  Paper: {published.title}")
-    print(f"  Venue: {published.venue}")
-    print(f"  DOI: {published.doi}")
+    print(f"  Paper: {published.title}")  # type: ignore
+    print(f"  Venue: {published.venue}")  # type: ignore
+    print(f"  DOI: {published.doi}")  # type: ignore
 
     # Archive the research
-    archive = academia.archive_publication(paper.id)
-    project_archive = academia.archive_project(project.id)
-    print(f"  Archived: paper and project")
+    academia.archive_publication(paper.id)
+    academia.archive_project(project.id)
+    print("  Archived: paper and project")
 
     # =========================================================================
     # Phase 3: Monetization Setup
@@ -252,7 +251,7 @@ def main():
     )
     researcher_account = exchange.create_account(
         "Researcher",
-        researcher_mask.entity_id,
+        researcher_mask.entity_id,  # type: ignore
         CurrencyType.TOKEN,
         Decimal("0"),
     )
@@ -286,7 +285,7 @@ def main():
         outputs=["PatternResult"],
     )
     sdk_code = generator.generate(sdk_structure.id, OutputLanguage.PYTHON)
-    print(f"  Generated SDK code ({len(sdk_code.code.code)} chars)")
+    print(f"  Generated SDK code ({len(sdk_code.code.code)} chars)")  # type: ignore
 
     # =========================================================================
     # Phase 4: User Activity and Consumption
@@ -338,7 +337,7 @@ def main():
 
     for user_id, calls in usage_patterns:
         successful = 0
-        for i in range(calls):
+        for _i in range(calls):
             event = consumption.create_event(
                 consumer_id=user_id,
                 resource_type=ResourceType.API_CALL,
@@ -363,22 +362,22 @@ def main():
 
     # Check total revenue
     updated_product = monetizer.get_process(api_product.id)
-    print(f"\n[Revenue Summary]")
-    print(f"  Total API Calls: {updated_product.usage_count}")
-    print(f"  Total Revenue: {updated_product.total_revenue} TOKENS")
+    print("\n[Revenue Summary]")
+    print(f"  Total API Calls: {updated_product.usage_count}")  # type: ignore
+    print(f"  Total Revenue: {updated_product.total_revenue} TOKENS")  # type: ignore
 
     # Create and process payout
     print("\n[Payout Processing]")
     payout = monetizer.create_payout(api_product.id)
-    print(f"  Gross Amount: {payout.amount} TOKENS")
-    print(f"  Platform Fee (10%): {payout.fee} TOKENS")
-    print(f"  Net to Researcher: {payout.net_amount} TOKENS")
+    print(f"  Gross Amount: {payout.amount} TOKENS")  # type: ignore
+    print(f"  Platform Fee (10%): {payout.fee} TOKENS")  # type: ignore
+    print(f"  Net to Researcher: {payout.net_amount} TOKENS")  # type: ignore
 
     # Execute transfer
-    transfer_result = exchange.transfer(
+    exchange.transfer(
         platform_account.id,
         researcher_account.id,
-        payout.net_amount,
+        payout.net_amount,  # type: ignore
     )
 
     # Record on blockchain
@@ -388,8 +387,8 @@ def main():
         data={
             "type": "royalty_payout",
             "product_id": api_product.id,
-            "amount": str(payout.net_amount),
-            "payout_id": payout.id,
+            "amount": str(payout.net_amount),  # type: ignore
+            "payout_id": payout.id,  # type: ignore
         },
     )
     blockchain.mine_block()
@@ -397,8 +396,8 @@ def main():
 
     # Final balances
     researcher_final = exchange.get_account(researcher_account.id)
-    print(f"\n[Final Balance]")
-    print(f"  Researcher: {researcher_final.balance} TOKENS")
+    print("\n[Final Balance]")
+    print(f"  Researcher: {researcher_final.balance} TOKENS")  # type: ignore
 
     # =========================================================================
     # Phase 6: System Statistics
@@ -413,14 +412,14 @@ def main():
     # Identity
     mask_stats = masks.get_stats()
     classifier_stats = classifier.get_stats()
-    print(f"  Identity:")
+    print("  Identity:")
     print(f"    Masks: {mask_stats.total_masks}")
     print(f"    Segments: {classifier_stats.total_segments}")
     print(f"    Members: {classifier_stats.total_members}")
 
     # Academic
     academic_stats = academia.get_stats()
-    print(f"  Academic:")
+    print("  Academic:")
     print(f"    Projects: {academic_stats.total_projects} ({academic_stats.completed_projects} completed)")
     print(f"    Publications: {academic_stats.total_publications} ({academic_stats.published_count} published)")
     print(f"    Citations: {academic_stats.total_citations}")
@@ -430,7 +429,7 @@ def main():
     exchange_stats = exchange.get_stats()
     monetizer_stats = monetizer.get_stats()
     blockchain_stats = blockchain.get_stats()
-    print(f"  Value Economy:")
+    print("  Value Economy:")
     print(f"    Accounts: {exchange_stats.total_accounts}")
     print(f"    Transactions: {exchange_stats.total_transactions}")
     print(f"    Products: {monetizer_stats.active_processes}")
@@ -439,14 +438,14 @@ def main():
 
     # Consumption
     consumption_stats = consumption.get_stats()
-    print(f"  Consumption:")
+    print("  Consumption:")
     print(f"    Total Events: {consumption_stats.total_events}")
     print(f"    Approved: {consumption_stats.consumed_count}")
     print(f"    Denied: {consumption_stats.rejected_count}")
 
     # Code Generation
     generator_stats = generator.get_stats()
-    print(f"  Code Generation:")
+    print("  Code Generation:")
     print(f"    Structures: {generator_stats.total_structures}")
     print(f"    Generations: {generator_stats.total_generated}")
 
